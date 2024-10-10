@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "just-os"
+version = "0.1.0"
+description = ""
+authors = ["Michiel van der Ree <michiel.van.der.ree@rug.nl>"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.10"
+Ebooklib = "*"
+faiss-cpu = "*"
+gradio = "*"
+html2text = "*"
+llama-index = "*"
+llama-index-embeddings-huggingface = "*"
+llama-index-llms-openai-like = "*"
+llama-index-readers-web = "*"
+llama-index-vector-stores-faiss = "*"
+pandas = "*"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
