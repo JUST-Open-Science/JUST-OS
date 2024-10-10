@@ -1,0 +1,4 @@
+base_url: http://localhost:10678/v1
+model: mistralai/Mistral-Nemo-Instruct-2407
+temperature: 0.3
+server_port: 7863
