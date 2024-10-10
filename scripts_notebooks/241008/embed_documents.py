@@ -1,22 +1,12 @@
 import json
 
-from llama_index.core import Document, VectorStoreIndex
-
+import faiss
+from llama_index.core import Document, StorageContext, VectorStoreIndex
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-
-
-from llama_index.core import (
-    SimpleDirectoryReader,
-    load_index_from_storage,
-    VectorStoreIndex,
-    StorageContext,
-)
 from llama_index.vector_stores.faiss import FaissVectorStore
 
-import faiss
-
 if __name__ == "__main__":
-    with open("classified_chunks.json", encoding="utf-8") as f:
+    with open("../data/classified_chunks.json", encoding="utf-8") as f:
         chunks = json.load(f)
     selected_chunks = [chunk["text"] for chunk in chunks if chunk["is_useful"]]
 

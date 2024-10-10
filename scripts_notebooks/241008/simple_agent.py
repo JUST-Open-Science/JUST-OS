@@ -1,10 +1,8 @@
-from llama_index.core import VectorStoreIndex, load_index_from_storage, StorageContext
+from llama_index.core import StorageContext, load_index_from_storage
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.vector_stores.faiss import FaissVectorStore
 from openai import Client
-
 from tqdm import tqdm
-
 
 MODEL = "mistralai/Mistral-Nemo-Instruct-2407"
 
@@ -29,7 +27,10 @@ Context items are below:
 ```
 {context_items}
 ```
-Given the context information and not prior knowledge, answer the query.
+Given the context information, answer the query.
+Do not base your answer on information outside of the provided context.
+If the provided context does not contain any relevant information, reply with
+something along the lines of "Sorry, I can't help you with that."
 Query: {query}
     """
 
@@ -58,7 +59,7 @@ Query: {query}
         prompt = prompt_template.format(context_items=context, query=query)
 
         response = client.chat.completions.create(
-            model=MODEL, messages=[{"role": "user", "content": prompt}], temperature=0.3
+            model=MODEL, messages=[{"role": "user", "content": prompt}], temperature=0.2
         )
         print("-QUERY----------------------------")
         print(query)
@@ -66,4 +67,3 @@ Query: {query}
         print(prompt)
         print("-RESPONSE-------------------------")
         print(response.choices[0].message.content)
-

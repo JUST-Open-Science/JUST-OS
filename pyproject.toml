@@ -13,11 +13,18 @@ gradio = "*"
 html2text = "*"
 llama-index = "*"
 llama-index-embeddings-huggingface = "*"
+llama-index-indices-managed-bge-m3 = "*"
 llama-index-llms-openai-like = "*"
 llama-index-readers-web = "*"
 llama-index-vector-stores-faiss = "*"
 pandas = "*"
+torch = { version = "*", source = "torch-cpu" }
 
+
+[[tool.poetry.source]]
+name = "torch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+priority = "supplemental"
 
 [build-system]
 requires = ["poetry-core"]
