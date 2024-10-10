@@ -66,6 +66,14 @@ if __name__ == "__main__":
 
     rag_wrapper = RagWrapper(client, system_prompt, index.as_retriever())
 
+    description = """
+NB: this is a rough development version.
+
+The bot is only using parts of the documents listed [here](https://docs.google.com/document/d/1RF-yJG7b_4D-wGnvDu86t8kHXTkvKJrd09HiNnXgNX4/edit).
+
+You can not have \"multi-turn\" conversations with the bot yet, each message you sent is treated as the start of a new conversation.
+"""
+
     gr.ChatInterface(
         rag_wrapper.predict,
         title="JUST-OS",
@@ -74,4 +82,5 @@ if __name__ == "__main__":
             "Where can I preregister my research?",
             "How does open science reshape the future of interdisciplinary and collaborative research?",
         ],
+        description=description
     ).queue().launch(show_api=False, server_port=CONFIG["server_port"])
