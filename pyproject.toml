@@ -19,12 +19,17 @@ llama-index-readers-web = "*"
 llama-index-vector-stores-faiss = "*"
 pandas = "*"
 torch = { version = "*", source = "torch-cpu" }
+docetl = {path = "../docetl-clean", develop = true}
 
 
 [[tool.poetry.source]]
 name = "torch-cpu"
 url = "https://download.pytorch.org/whl/cpu"
 priority = "supplemental"
+
+
+[tool.poetry.group.dev.dependencies]
+ipython = "^8.29.0"
 
 [build-system]
 requires = ["poetry-core"]

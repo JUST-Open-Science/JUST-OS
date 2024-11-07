@@ -1,0 +1,52 @@
+datasets:
+  chunks:
+    type: file
+    path: "../data/interim/chunked_paragraphs_241025.json"
+
+default_model: gpt-4o-mini
+
+operations:
+  - name: filter_chunk
+    type: filter
+    max_batch_size: 16
+    output:
+      schema:
+        is_useful: "bool"
+    prompt: |
+      Assess whether the following chunk of text, without additional context, would be a usable knowledge item
+      for an information retrieval pipeline to return based on some user query related
+      to open science. The user's query might refer to many open science concepts.
+
+      The chunk has been extracted from a larger piece of text. An example of a chunk
+      that's not useful would be an entry from the bibliography of an academic paper.
+
+
+      The chunk of text:
+      {{ input.text }}
+    validate:
+      - isinstance(output["is_useful"], bool)
+  - name: generate_question
+    type: map
+    max_batch_size: 16
+    output:
+      schema:
+        question: "string"
+    prompt: |
+      Generate a question to which the following chunk of text contains the answer, preferably related to open science.
+      The question should be general and not reference specific individuals mentioned in the text.
+      Don't use phrases like 'in the text' in your answer.
+
+      The chunk of text:
+      {{ input.text }}
+pipeline:
+  steps:
+    - name: question_generation
+      input: chunks
+      operations:
+        - filter_chunk
+        - generate_question
+
+  output:
+    type: file
+    path: "../data/interim/chunk_paragraphs_with_questions.json"
+    intermediate_dir: "checkpoints"
