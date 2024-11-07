@@ -19,8 +19,7 @@ llama-index-readers-web = "*"
 llama-index-vector-stores-faiss = "*"
 pandas = "*"
 torch = { version = "*", source = "torch-cpu" }
-docetl = {path = "../docetl-clean", develop = true}
-
+python-dotenv = "^1.0.1"
 
 [[tool.poetry.source]]
 name = "torch-cpu"

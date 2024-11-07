@@ -1,0 +1,4 @@
+base_url: https://llm.hpc.rug.nl/
+model: mistral-nemo-instruct
+temperature: 0.3
+server_port: 7863
