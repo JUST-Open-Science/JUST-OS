@@ -82,16 +82,12 @@ generation_instance_prompts_w_references = (
 
 
 def post_process_response(raw_response: str) -> str:
-    return (
-        [
-            t.split("[Response_End]")[0]
-            for t in raw_response.split("[Response_Start]")
-            if "[Response_End]" in t
-        ][0]
-        if "[Response_End]" in raw_response
-        else raw_response
-    )
-
+    response = raw_response
+    if "[Response_Start]" in response:
+        response = response.split("[Response_Start]", 1)[1]
+    if "[Response_End]" in response:
+        response = response.split("[Response_End]")[0]
+    return response
 
 class RagWrapper:
     def __init__(self, client, system_prompt, retriever):
@@ -128,7 +124,7 @@ class RagWrapper:
 
 if __name__ == "__main__":
     client = OpenAI(
-        api_key=os.getenv("LITELLM_PROXY_API_KEY"), base_url=CONFIG["base_url"]
+        api_key=os.getenv("RUGLLM_API_KEY"), base_url=CONFIG["base_url"]
     )
     system_prompt = (
         "You are a helpful AI assistant for scientific literature review. "
