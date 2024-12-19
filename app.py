@@ -6,9 +6,6 @@ from dotenv import load_dotenv
 from llama_index.core import StorageContext, load_index_from_storage
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.vector_stores.faiss import FaissVectorStore
-from llama_index.core import StorageContext, load_index_from_storage
-from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-from llama_index.vector_stores.faiss import FaissVectorStore
 from openai import OpenAI
 
 load_dotenv()
@@ -98,7 +95,6 @@ class RagWrapper:
         self.system_prompt = system_prompt
         self.retriever = retriever
 
-        self.prompt_template = generation_instance_prompts_w_references
         self.prompt_template = generation_instance_prompts_w_references
 
     def predict(self, query, history):
