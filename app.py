@@ -3,7 +3,9 @@ import os
 import gradio as gr
 import yaml
 from dotenv import load_dotenv
-from llama_index.indices.managed.bge_m3 import BGEM3Index
+from llama_index.core import StorageContext, load_index_from_storage
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+from llama_index.vector_stores.faiss import FaissVectorStore
 from openai import OpenAI
 
 load_dotenv()
@@ -16,7 +18,14 @@ with open("config.yaml", "r") as config_file:
 
 def context_from_nodes(nodes):
     return "\n".join(
-        f"[{idx}] {' '.join(node.text.split())}" for idx, node in enumerate(nodes)
+        f"[{idx}] Title: {node.metadata['Title']} Text: {' '.join(node.text.split())}"
+        for idx, node in enumerate(nodes)
+    )
+
+def references_from_nodes(nodes):
+    return "\n".join(
+        f"[{idx}] {node.metadata['Provider/Creators']} ({node.metadata['Timestamp']}). {node.metadata['Title']}. {node.metadata['URL/DOI (please check DOI by collating DOI at the end of https://doi.org/ )']}"
+        for idx, node in enumerate(nodes)
     )
 
 
@@ -72,7 +81,6 @@ generation_instance_prompts_w_references = (
 
 
 class RagWrapper:
-
     def __init__(self, client, system_prompt, retriever):
         self.client = client
         self.system_prompt = system_prompt
@@ -85,7 +93,6 @@ class RagWrapper:
         context = context_from_nodes(nodes)
         prompt = self.prompt_template.format(context_items=context, query=query)
 
-        print(prompt)
 
         history_openai_format = []
         history_openai_format.append({"role": "system", "content": self.system_prompt})
@@ -101,30 +108,35 @@ class RagWrapper:
         partial_message = ""
         for chunk in response:
             if chunk.choices[0].delta.content is not None:
-                print(chunk.choices[0].delta.content)
                 partial_message = partial_message + chunk.choices[0].delta.content
                 yield partial_message
+        
+        yield partial_message + "\n\n" + references_from_nodes(nodes)
 
 
 if __name__ == "__main__":
     client = OpenAI(
         api_key=os.getenv("LITELLM_PROXY_API_KEY"), base_url=CONFIG["base_url"]
     )
-    system_prompt = "You are a helpful AI assistant for scientific literature review. Please carefully follow user's instruction and help them to understand the most recent papers."
-
-    index = BGEM3Index.load_from_disk(
-        "data/processed/storage_m3", weights_for_different_modes=[1.0, 0.3, 0.0]
+    system_prompt = (
+        "You are a helpful AI assistant for scientific literature review. "
+        "Please carefully follow user's instruction and help them to understand the most recent papers."
     )
 
-    rag_wrapper = RagWrapper(client, system_prompt, index.as_retriever(similarity_top_k=10))
+    embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5")
 
-    description = """
-NB: this is a rough development version.
+    persist_dir = "data/interim/vs_241218_bge-small-en-v1.5"
+    vector_store = FaissVectorStore.from_persist_dir(persist_dir)
+    storage_context = StorageContext.from_defaults(
+        vector_store=vector_store, persist_dir=persist_dir
+    )
+    index = load_index_from_storage(
+        storage_context=storage_context, embed_model=embed_model
+    )
 
-The bot is only using parts of the documents listed [here](https://docs.google.com/document/d/1RF-yJG7b_4D-wGnvDu86t8kHXTkvKJrd09HiNnXgNX4/edit).
-
-You can not have \"multi-turn\" conversations with the bot yet, each message you sent is treated as the start of a new conversation.
-"""
+    rag_wrapper = RagWrapper(
+        client, system_prompt, index.as_retriever(similarity_top_k=7)
+    )
 
     gr.ChatInterface(
         rag_wrapper.predict,
@@ -134,5 +146,4 @@ You can not have \"multi-turn\" conversations with the bot yet, each message you
             "Where can I preregister my research?",
             "How does open science reshape the future of interdisciplinary and collaborative research?",
         ],
-        description=description,
     ).queue().launch(show_api=False, server_port=CONFIG["server_port"])

@@ -16,11 +16,12 @@ dependencies = [
     "tqdm>=4.67.1",
     "llama-index-vector-stores-faiss>=0.3.0",
     "xformers>=0.0.28.post3",
+    "gradio>=5.9.1",
 ]
 
 [tool.uv.sources]
 torch = [
-    { index = "pytorch-cu118" },
+    { index = "pytorch-cpu" },
 ]
 [[tool.uv.index]]
 name = "pytorch-cu118"
