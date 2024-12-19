@@ -6,6 +6,9 @@ from dotenv import load_dotenv
 from llama_index.core import StorageContext, load_index_from_storage
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.vector_stores.faiss import FaissVectorStore
+from llama_index.core import StorageContext, load_index_from_storage
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+from llama_index.vector_stores.faiss import FaissVectorStore
 from openai import OpenAI
 
 load_dotenv()
@@ -96,6 +99,7 @@ class RagWrapper:
         self.retriever = retriever
 
         self.prompt_template = generation_instance_prompts_w_references
+        self.prompt_template = generation_instance_prompts_w_references
 
     def predict(self, query, history):
         nodes = self.retriever.retrieve(query)
@@ -125,6 +129,25 @@ class RagWrapper:
 if __name__ == "__main__":
     client = OpenAI(
         api_key=os.getenv("RUGLLM_API_KEY"), base_url=CONFIG["base_url"]
+    )
+    system_prompt = (
+        "You are a helpful AI assistant for scientific literature review. "
+        "Please carefully follow user's instruction and help them to understand the most recent papers."
+    )
+
+    embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5")
+
+    persist_dir = "data/interim/vs_241218_bge-small-en-v1.5"
+    vector_store = FaissVectorStore.from_persist_dir(persist_dir)
+    storage_context = StorageContext.from_defaults(
+        vector_store=vector_store, persist_dir=persist_dir
+    )
+    index = load_index_from_storage(
+        storage_context=storage_context, embed_model=embed_model
+    )
+
+    rag_wrapper = RagWrapper(
+        client, system_prompt, index.as_retriever(similarity_top_k=7)
     )
     system_prompt = (
         "You are a helpful AI assistant for scientific literature review. "
