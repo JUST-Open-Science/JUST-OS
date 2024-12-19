@@ -1,35 +1,40 @@
-[tool.poetry]
+[project]
 name = "just-os"
 version = "0.1.0"
-description = ""
-authors = ["Michiel van der Ree <michiel.van.der.ree@rug.nl>"]
-package-mode = false
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "faiss-cpu>=1.9.0.post1",
+    "llama-index-embeddings-huggingface>=0.4.0",
+    "llama-index>=0.12.6",
+    "marker-pdf>=1.1.0",
+    "openpyxl>=3.1.5",
+    "streamlit>=1.41.0",
+    "surya-ocr>=0.7.0",
+    "torch>=2.5.1",
+    "tqdm>=4.67.1",
+    "llama-index-vector-stores-faiss>=0.3.0",
+    "xformers>=0.0.28.post3",
+    "gradio>=5.9.1",
+]
 
-[tool.poetry.dependencies]
-python = "^3.10"
-Ebooklib = "*"
-faiss-cpu = "*"
-gradio = "*"
-html2text = "*"
-llama-index = "*"
-llama-index-embeddings-huggingface = "*"
-llama-index-indices-managed-bge-m3 = "*"
-llama-index-llms-openai-like = "*"
-llama-index-readers-web = "*"
-llama-index-vector-stores-faiss = "*"
-pandas = "*"
-torch = { version = "*", source = "torch-cpu" }
-python-dotenv = "^1.0.1"
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cpu" },
+]
+[[tool.uv.index]]
+name = "pytorch-cu118"
+url = "https://download.pytorch.org/whl/cu118"
+explicit = true
 
-[[tool.poetry.source]]
-name = "torch-cpu"
-url = "https://download.pytorch.org/whl/cpu"
-priority = "supplemental"
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = " https://download.pytorch.org/whl/cpu"
+explicit = true
 
-
-[tool.poetry.group.dev.dependencies]
-ipython = "^8.29.0"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[dependency-groups]
+dev = [
+    "ipykernel>=6.29.5",
+    "ipython>=8.30.0",
+]
