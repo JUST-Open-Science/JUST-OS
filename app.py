@@ -22,6 +22,7 @@ def context_from_nodes(nodes):
         for idx, node in enumerate(nodes)
     )
 
+
 def references_from_nodes(nodes):
     return "\n".join(
         f"[{idx}] {node.metadata['Provider/Creators']} ({node.metadata['Timestamp']}). {node.metadata['Title']}. {node.metadata['URL/DOI (please check DOI by collating DOI at the end of https://doi.org/ )']}"
@@ -80,6 +81,18 @@ generation_instance_prompts_w_references = (
 )
 
 
+def post_process_response(raw_response: str) -> str:
+    return (
+        [
+            t.split("[Response_End]")[0]
+            for t in raw_response.split("[Response_Start]")
+            if "[Response_End]" in t
+        ][0]
+        if "[Response_End]" in raw_response
+        else raw_response
+    )
+
+
 class RagWrapper:
     def __init__(self, client, system_prompt, retriever):
         self.client = client
@@ -92,7 +105,6 @@ class RagWrapper:
         nodes = self.retriever.retrieve(query)
         context = context_from_nodes(nodes)
         prompt = self.prompt_template.format(context_items=context, query=query)
-
 
         history_openai_format = []
         history_openai_format.append({"role": "system", "content": self.system_prompt})
@@ -109,9 +121,9 @@ class RagWrapper:
         for chunk in response:
             if chunk.choices[0].delta.content is not None:
                 partial_message = partial_message + chunk.choices[0].delta.content
-                yield partial_message
-        
-        yield partial_message + "\n\n" + references_from_nodes(nodes)
+                yield post_process_response(partial_message)
+
+        yield post_process_response(partial_message) + "\n\n" + references_from_nodes(nodes)
 
 
 if __name__ == "__main__":
