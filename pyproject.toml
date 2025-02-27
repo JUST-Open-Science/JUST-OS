@@ -17,6 +17,8 @@ dependencies = [
     "llama-index-vector-stores-faiss>=0.3.0",
     "xformers>=0.0.28.post3",
     "gradio>=5.9.1",
+    "flask>=3.1.0",
+    "datasets>=3.2.0",
 ]
 
 [tool.uv.sources]
@@ -32,6 +34,9 @@ explicit = true
 name = "pytorch-cpu"
 url = " https://download.pytorch.org/whl/cpu"
 explicit = true
+
+[tool.uv.workspace]
+members = ["chat_app"]
 
 [dependency-groups]
 dev = [
