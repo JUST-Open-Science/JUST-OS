@@ -19,6 +19,8 @@ dependencies = [
     "gradio>=5.9.1",
     "flask>=3.1.0",
     "datasets>=3.2.0",
+    "redis>=5.2.1",
+    "gunicorn>=23.0.0",
 ]
 
 [tool.uv.sources]

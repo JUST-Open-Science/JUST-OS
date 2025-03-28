@@ -1,15 +1,20 @@
 # app.py
-from flask import Flask, render_template, request, Response
 import json
+
+import yaml
+from flask import Flask, Response, render_template, request
+
 from config import WELCOME_MESSAGE
 from qualle import Qualle
-import yaml
+from chat_manager import ChatManager
+from redis import Redis
+
 
 
 class FlaskApp:
     def __init__(self):
         self.app = Flask(__name__)
-        self.rag_service = None
+        self.chat_manager = ChatManager(Redis(host="localhost", port=6379, db=0))
         self.setup_routes()
 
     def setup_routes(self):
@@ -20,14 +25,17 @@ class FlaskApp:
         @self.app.route("/chat", methods=["POST"])
         def chat():
             user_message = request.json["message"]
+            chat_id = request.json["chat_id"]
 
             def generate():
                 try:
-                    for response in self.rag_service.get_response(user_message):
+                    for response in self.rag_service.get_response(user_message, chat_id):
+                        print(response)
                         yield json.dumps(response) + "\n"
 
                 except Exception as e:
                     print(f"Error: {str(e)}")
+                    print(response)
                     yield json.dumps(
                         {
                             "status": "error",
@@ -38,7 +46,8 @@ class FlaskApp:
             return Response(generate(), mimetype="text/event-stream")
 
     def create_app(self, config):
-        self.rag_service = Qualle(config)
+        self.config = config
+        self.rag_service = Qualle(config, self.chat_manager)
         return self.app
 
 
@@ -47,8 +56,10 @@ def load_config():
         return yaml.safe_load(config_file)
 
 
+config = load_config()
+flask_app = FlaskApp()
+app = flask_app.create_app(config)
+
+
 if __name__ == "__main__":
-    config = load_config()
-    flask_app = FlaskApp()
-    app = flask_app.create_app(config)
     app.run(debug=True, port=config["server_port"])
