@@ -23,3 +23,8 @@ RUGLLM_API_KEY=<your key>
 ```bash
 uv run app.py
 ```
+
+or in production with
+```
+uv run gunicorn -w 4 -b 127.0.0.1:5000 app:app
+```

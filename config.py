@@ -4,12 +4,6 @@ import os
 # Load environment variables from .env file
 load_dotenv()
 
-# OpenAI API configuration
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-if not OPENAI_API_KEY:
-    raise ValueError("No OpenAI API key found. Please set OPENAI_API_KEY in .env file")
-OPENAI_API_BASE = os.getenv('OPENAI_API_BASE')  # Optional, for compatible APIs
-
 # Chat configuration
 WELCOME_MESSAGE = "Hi, I'm JUST-OS! I'd be happy to answer all your questions related to Open Science!"
 
