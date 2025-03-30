@@ -19,7 +19,12 @@ cd JUST-OS
 RUGLLM_API_KEY=<your key>
 ``` 
 
-5. Start the app with:
+5. Make sure you have a Redis instance running at port 6379. Docker one liner: 
+```bash
+docker run --name redis -d -p 6379:6379 redis
+```
+
+6. Start the app with:
 ```bash
 uv run app.py
 ```
