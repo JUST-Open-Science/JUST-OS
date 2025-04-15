@@ -1,109 +1,172 @@
+
 body {
-    background-color: #f5f5f5;
-    padding: 20px 0;
-    min-height: 100vh;
-    margin: 0;
+    background-color: #fefdf6;
+    /* font-family: "Helvetica", sans-serif; */
+    font-family: "Century Schoolbook";
+    font-color: #313131
+}
+
+#header-bar {
     display: flex;
-    flex-direction: column;
+    justify-content: center;
+    max-width: 799px;
+    margin: 0 auto
 }
 
-.container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
+#header-logo {
+    height: 100px;
+    margin-bottom: 10px;
 }
 
-.row {
-    flex: 1;
+
+#status-message {
+    font-style: italic;
+    font-size: small;
+    color: #666;
+    margin: 10px 0;
+    font-family: "Helvetica", sans-serif;
 }
 
-.col-md-auto {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
-
-.header-image {
-    margin-bottom: 20px;
-}
-
-.header-image img {
-    width: 100%;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.chat-container {
-    background-color: white;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    padding: 20px;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-.chat-messages {
-    flex: 1;
-    overflow-y: auto;
-    margin-bottom: 20px;
-    padding: 10px;
-    min-height: 0;
+#welcome-message {
+    font-size: x-large;
+    text-align: center;
 }
 
 .message {
-    margin-bottom: 15px;
+    margin-bottom: 10px;
+    border-radius: 4px;
     padding: 10px;
-    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
+
+#container {
+    margin: auto;
+    max-width: 800px;
+}
+
+#user-input-box {
+    display: flex;
+    justify-content: space-between;
+    /* margin-bottom: 10px; */
+    margin-top: 10px;
+    min-height: 100px;
+    position: sticky;
+    bottom: 0;
+    padding: 10px;
+    background-color: #004055;
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    font-family: "Roboto Mono", monospace;
+}
+
+#user-input:focus {
+    outline: none;
+}
+
+#user-input-container {
+    width: 100%;
+    display: flex;
+    align-items: stretch;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: white;
+}
+
+#button-container {
+    display: flex;
+    flex-direction: column;
+    align-self: flex-start;
+}
+
+textarea#user-input {
+    border: none;
+    flex-grow: 1;
+    height: 100%;
+}
+
+
 .user-message {
-    background-color: #007bff;
-    color: white;
-    margin-left: 20%;
+    background-color: white;
+    margin-left: 10%;
 }
+
 .bot-message {
-    background-color: #f1f1f1;
-    margin-right: 20%;
+    background-color: white;
+    margin-right: 10%;
 }
 
 .bot-message h1, .bot-message h2, .bot-message h3 {
     margin-top: 1em;
     margin-bottom: 0.5em;
 }
+
 .bot-message p {
     margin-bottom: 1em;
 }
+
 .bot-message ul, .bot-message ol {
     margin-left: 1.5em;
     margin-bottom: 1em;
 }
+
 .bot-message code {
     background-color: #f0f0f0;
     padding: 0.2em 0.4em;
     border-radius: 3px;
     font-family: monospace;
 }
+
 .bot-message pre {
     background-color: #f0f0f0;
     padding: 1em;
     border-radius: 5px;
     overflow-x: auto;
 }
+
 .bot-message a {
     color: #0366d6;
     text-decoration: none;
 }
+
 .bot-message a:hover {
     text-decoration: underline;
 }
 
-.status-message {
-    font-style: italic;
-    color: #666;
-    margin-bottom: 10px;
-    min-height: 20px;
+#chat .form-control {
+    border-color: transparent;
+    }
+    
+#chat .form-control:focus {
+border-color: transparent;
+box-shadow: inset 0px 0px 0px 1px transparent;
 }
 
-.input-group {
-    margin-top: 10px;
+#chat-messages {
+    margin-bottom: 10px;
+    word-wrap: break-word;
+    margin: 0px;
+    margin-block-end: 10px;
+    
+    /* flex: 1 1 auto;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 15px;
+    scroll-behavior: smooth; */
+}
+
+button#send-button,
+button#info-button {
+    font-size: 1.2em;
+    height:100%;
+    border: none;
+    color: #8e0000;
+    background: none;
+    cursor: pointer;
+}
+
+button#send-button:disabled {
+    color: #ccc
 }
