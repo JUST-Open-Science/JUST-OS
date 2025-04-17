@@ -2,8 +2,8 @@
 body {
     background-color: #fefdf6;
     /* font-family: "Helvetica", sans-serif; */
-    font-family: "Century Schoolbook";
-    font-color: #313131
+    font-family: "Century Schoolbook", serif;
+    color: #313131
 }
 
 #header-bar {
