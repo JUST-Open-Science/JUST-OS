@@ -1,14 +1,20 @@
-function addMessage(message, sender) {
+function addMessage(message, sender, sources=null) {
     const chatMessages = document.getElementById('chat-messages');
 
     const messageDiv = document.createElement('div');
     messageDiv.classList.add('message', `${sender}-message`);
 
-    // Only render markdown for bot messages
     if (sender === 'bot') {
-        messageDiv.innerHTML = marked.parse(message);
+        messageDiv.innerHTML = message;
     } else {
         messageDiv.textContent = message;
+    }
+
+    if (sources !== null) {
+        const sourcesDiv = document.createElement('div');
+        sourcesDiv.classList.add('sources');
+        sourcesDiv.textContent = sources;
+        messageDiv.appendChild(sourcesDiv);
     }
 
     chatMessages.appendChild(messageDiv);
@@ -50,9 +56,6 @@ async function sendMessage(message) {
         messageInput.disabled = false;
         sendButton.style.display = 'block';
         statusMessage.innerText = '';
-        // cancelButton.style.display = 'none';
-        // loadingMessageDiv.removeChild(loadingMessageBox);
-        // eventSource.close();     
     }
 
     try {
@@ -79,7 +82,8 @@ async function sendMessage(message) {
 
                     if (data.status === 'complete') {
                         endStream();
-                        addMessage(data.message, 'bot');
+                        addMessage(data.message, 'bot', data.metadata.sources);
+                        
                     } else {
                         baseMessage = data.message;
                     }
@@ -130,78 +134,4 @@ function requestBody(message) {
     })
 }
 
-
-
-
-    // function updateStatus(message) {
-    //     statusMessage.textContent = message;
-    // }
-
-    // function updateLastBotMessage(message) {
-    //     const botMessages = document.getElementsByClassName('bot-message');
-    //     if (botMessages.length > 0) {
-    //         const lastBotMessage = botMessages[botMessages.length - 1];
-    //         lastBotMessage.innerHTML = marked.parse(message);
-    //     } else {
-    //         addMessage(message, 'bot');
-    //     }
-    //     chatMessages.scrollTop = chatMessages.scrollHeight;
-    // }
-
-
-    // // chat.js
-    // async function sendMessage() {
-    //     welcomeMessage.textContent = '';
-
-    //     const message = userInput.value.trim();
-    //     if (message === '') return;
-
-    //     addMessage(message, 'user');
-    //     userInput.value = '';
-
-    //     try {
-    //         const response = await fetch('/chat', {
-    //             method: 'POST',
-    //             headers: {
-    //                 'Content-Type': 'application/json',
-    //             },
-    //             body: JSON.stringify({ message: message })
-    //         });
-
-    //         const reader = response.body.getReader();
-    //         const decoder = new TextDecoder();
-
-    //         while (true) {
-    //             const {value, done} = await reader.read();
-    //             if (done) break;
-
-    //             const messages = decoder.decode(value).split('\n');
-
-    //             for (const message of messages) {
-    //                 if (message) {  // check for non-empty messages
-    //                     const data = JSON.parse(message);
-    //                     if (data.status === 'complete') {
-    //                         updateStatus('');
-    //                         addMessage(data.message, 'bot');
-    //                     } else if (data.status === 'generating') {
-    //                         addMessage(data.message, 'bot');
-    //                     } else {
-    //                         updateStatus(data.message);
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     } catch (error) {
-    //         console.error('Error:', error);
-    //         updateStatus('Error: Failed to get response');
-    //     }
-    // }
-
-    // sendButton.addEventListener('click', sendMessage);
-    // userInput.addEventListener('keypress', function (e) {
-    //     if (e.key === 'Enter') {
-    //         sendMessage();
-    //     }
-    // });
 const chatId = crypto.randomUUID();
-console.log(chatId);

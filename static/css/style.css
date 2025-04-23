@@ -133,6 +133,11 @@ textarea#user-input {
     text-decoration: underline;
 }
 
+.sources {
+    font-size: smaller;
+    text-align: end;
+}
+
 #chat .form-control {
     border-color: transparent;
     }

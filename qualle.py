@@ -7,6 +7,8 @@ from openai import OpenAI
 from openscholar import generation_instance_prompts_w_references, system_prompt
 from chat_manager import ChatManager
 
+import markdown
+
 from threading import Lock
 
 import json
@@ -175,6 +177,7 @@ Now reformulate the following question such that it makes sense in isolation:\n{
 
         message = response.choices[0].message.content
         processed_message = self.post_process_response(message)
+        html_message = markdown.markdown(processed_message)
 
         self.chat_manager.add_message(chat_id, {"role": "user", "content": query})
         self.chat_manager.add_message(
@@ -183,6 +186,6 @@ Now reformulate the following question such that it makes sense in isolation:\n{
 
         yield {
             "status": "complete",
-            "message": processed_message,
+            "message": html_message,
             "metadata": {"sources": self.references_from_nodes(nodes)},
         }
