@@ -7,6 +7,9 @@ from openai import OpenAI
 from openscholar import generation_instance_prompts_w_references, system_prompt
 from chat_manager import ChatManager
 
+from bs4 import BeautifulSoup
+import re
+
 import markdown
 
 from threading import Lock
@@ -78,6 +81,54 @@ class Qualle:
             f"[{idx}] Title: {node.metadata[TITLE_KEY]} Text: {' '.join(node.text.split())}"
             for idx, node in enumerate(nodes)
         )
+
+    def process_markdown_with_references(self, markdown_text, references_nodes):
+        """Convert markdown to HTML and add clickable references with tooltips"""
+        # First convert markdown to HTML
+        html = markdown.markdown(markdown_text)
+        
+        # Parse the HTML
+        soup = BeautifulSoup(html, 'html.parser')
+        
+        # Find all reference patterns like [1], [2], etc.
+        reference_pattern = r'\[(\d+)\]'
+        
+        # Get all text nodes
+        text_nodes = soup.find_all(text=True)
+        
+        for text in text_nodes:
+            if re.search(reference_pattern, text):
+                new_text = text
+                for match in re.finditer(reference_pattern, text):
+                    ref_num = match.group(1)
+                    ref_idx = int(ref_num)
+                    
+                    if ref_idx < len(references_nodes):
+                        # Get reference details
+                        ref_node = references_nodes[ref_idx]
+                        
+                        # Create reference data
+                        reference_data = {
+                            "title": ref_node.metadata[TITLE_KEY],
+                            "authors": ref_node.metadata[CREATOR_KEY],
+                            "year": ref_node.metadata[TIMESTAMP_KEY],
+                            "url": ref_node.metadata[URL_DOI_KEY]
+                        }
+                        
+                        # Create the reference link with data attributes
+                        reference_html = (
+                            f'<a href="#" class="reference-link" '
+                            f'data-reference=\'{json.dumps(reference_data)}\'>'
+                            f'[{ref_num}]'
+                            f'</a>'
+                        )
+                        
+                        new_text = new_text.replace(match.group(0), reference_html)
+                
+                # Replace the text node with the new HTML
+                text.replace_with(BeautifulSoup(new_text, 'html.parser'))
+        
+        return str(soup)
 
     def references_from_nodes(self, nodes):
         return "\n".join(
@@ -177,7 +228,7 @@ Now reformulate the following question such that it makes sense in isolation:\n{
 
         message = response.choices[0].message.content
         processed_message = self.post_process_response(message)
-        html_message = markdown.markdown(processed_message)
+        html_message = self.process_markdown_with_references(processed_message, nodes)
 
         self.chat_manager.add_message(chat_id, {"role": "user", "content": query})
         self.chat_manager.add_message(

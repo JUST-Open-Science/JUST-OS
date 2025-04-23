@@ -1,3 +1,48 @@
+function setupReferenceHandlers() {
+    document.querySelectorAll('.reference-link').forEach(link => {
+        link.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Remove any existing tooltips
+            document.querySelectorAll('.reference-tooltip').forEach(t => t.remove());
+
+            // Create tooltip
+            const tooltip = document.createElement('div');
+            tooltip.className = 'reference-tooltip';
+
+            const data = JSON.parse(this.getAttribute('data-reference'));
+
+            tooltip.innerHTML = `
+                <div class="title">${data.title}</div>
+                <div class="metadata">${data.authors} (${data.year})</div>
+                ${data.url ? `<a href="${data.url}" target="_blank" class="source-link">View source →</a>` : ''}
+            `;
+
+            // Position tooltip near the click
+            const rect = this.getBoundingClientRect();
+            tooltip.style.left = `${rect.left}px`;
+            tooltip.style.top = `${rect.bottom + window.scrollY + 5}px`;
+
+            // Add tooltip to document
+            document.body.appendChild(tooltip);
+
+            // Close tooltip when clicking outside
+            function closeTooltip(e) {
+                if (!tooltip.contains(e.target) && e.target !== link) {
+                    tooltip.remove();
+                    document.removeEventListener('click', closeTooltip);
+                }
+            }
+
+            // Add delay before adding click listener to prevent immediate closing
+            setTimeout(() => {
+                document.addEventListener('click', closeTooltip);
+            }, 0);
+        });
+    });
+}
+
 function addMessage(message, sender, sources=null) {
     const chatMessages = document.getElementById('chat-messages');
 
@@ -6,6 +51,10 @@ function addMessage(message, sender, sources=null) {
 
     if (sender === 'bot') {
         messageDiv.innerHTML = message;
+        // Setup reference handlers after adding bot message
+        setTimeout(() => {
+            setupReferenceHandlers();
+        }, 0);
     } else {
         messageDiv.textContent = message;
     }
@@ -64,13 +113,13 @@ async function sendMessage(message) {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ message: message, chat_id: chatId})
+            body: JSON.stringify({ message: message, chat_id: chatId })
         });
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
 
         while (true) {
-            const {value, done} = await reader.read();
+            const { value, done } = await reader.read();
             if (done) break;
 
             const messages = decoder.decode(value).split('\n');
@@ -83,7 +132,7 @@ async function sendMessage(message) {
                     if (data.status === 'complete') {
                         endStream();
                         addMessage(data.message, 'bot', data.metadata.sources);
-                        
+
                     } else {
                         baseMessage = data.message;
                     }
@@ -94,7 +143,7 @@ async function sendMessage(message) {
         console.error('Error:', error);
         updateStatus('Error: Failed to get response');
     }
-    
+
 
 
 
@@ -107,11 +156,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     userInput.value = "How does open science reshape the future of interdisciplinary and collaborative research?";
 
-    userInput.addEventListener('input', function() {
+    userInput.addEventListener('input', function () {
         sendButton.disabled = this.value.length < 3;
     });
 
-    userInput.addEventListener('keydown', function(event) {
+    userInput.addEventListener('keydown', function (event) {
         if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
             if (!sendButton.disabled) {
@@ -120,7 +169,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    sendButton.addEventListener('click', function() {
+    sendButton.addEventListener('click', function () {
         const message = userInput.value;
         userInput.value = '';
         sendMessage(message);
