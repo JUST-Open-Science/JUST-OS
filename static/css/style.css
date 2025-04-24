@@ -154,14 +154,6 @@ textarea#user-input {
     word-wrap: break-word;
     margin: 0px;
     margin-block-end: 10px;
-
-    /* flex: 1 1 auto;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 15px;
-    scroll-behavior: smooth; */
 }
 
 button#send-button,
@@ -191,9 +183,7 @@ button#send-button:disabled {
     border: 1px solid #ccc;
     padding: 15px;
     border-radius: 4px;
-    max-width: 400px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    max-width: 500px;
+    max-width: 500px; /* Increased from 400px */
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     z-index: 1000;
     font-size: 14px;
@@ -208,7 +198,6 @@ button#send-button:disabled {
 
 .reference-tooltip .metadata {
     color: #666;
-    margin-bottom: 8px;
     margin-bottom: 12px;
     font-size: 13px;
 }
@@ -221,19 +210,19 @@ button#send-button:disabled {
     font-size: 13px;
     line-height: 1.5;
     color: #444;
-    max-height: 150px;
-    overflow-y: auto;
+    max-height: 150px; /* Limit height */
+    overflow-y: auto; /* Make it scrollable if content is too long */
 }
 
 .reference-tooltip .source-link {
     display: block;
-    margin-top: 8px;
     margin-top: 12px;
     color: #0645AD;
     text-decoration: none;
     font-size: 13px;
 }
 
+/* Add smooth scrollbar styling for webkit browsers */
 .reference-tooltip .content::-webkit-scrollbar {
     width: 6px;
 }

@@ -15,6 +15,7 @@ import markdown
 from threading import Lock
 
 import json
+import html
 
 import logging
 
@@ -85,10 +86,10 @@ class Qualle:
     def process_markdown_with_references(self, markdown_text, references_nodes):
         """Convert markdown to HTML and add clickable references with tooltips"""
         # First convert markdown to HTML
-        html = markdown.markdown(markdown_text)
+        html_text = markdown.markdown(markdown_text)
         
         # Parse the HTML
-        soup = BeautifulSoup(html, 'html.parser')
+        soup = BeautifulSoup(html_text, 'html.parser')
         
         # Find all reference patterns like [1], [2], etc.
         reference_pattern = r'\[(\d+)\]'
@@ -112,16 +113,26 @@ class Qualle:
                             "title": ref_node.metadata[TITLE_KEY],
                             "authors": ref_node.metadata[CREATOR_KEY],
                             "year": ref_node.metadata[TIMESTAMP_KEY],
-                            "url": ref_node.metadata[URL_DOI_KEY]
+                            "url": ref_node.metadata[URL_DOI_KEY],
+                            "text": html.escape(ref_node.text),
                         }
+
+                        # Create JSON string and escape special characters for HTML safety
+                        data_string = json.dumps(reference_data, ensure_ascii=True, 
+                                               separators=(',', ':'))
+                        # HTML escape the entire data string for safe attribute insertion
+                        escaped_data_string = html.escape(data_string, quote=True)
                         
                         # Create the reference link with data attributes
                         reference_html = (
                             f'<a href="#" class="reference-link" '
-                            f'data-reference=\'{json.dumps(reference_data)}\'>'
+                            f'data-reference="{escaped_data_string}">'
                             f'[{ref_num}]'
                             f'</a>'
                         )
+
+                        logger.debug(f"[{ref_num}]: {ref_node.text}")
+                        logger.debug(f"[{ref_num}]: {data_string}")
                         
                         new_text = new_text.replace(match.group(0), reference_html)
                 
