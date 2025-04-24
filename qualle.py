@@ -107,12 +107,22 @@ class Qualle:
                     used_refs_ordered.append(ref_idx)
                     ref_mapping[ref_idx] = len(used_refs_ordered)  # New number is position + 1
         
+        logger.debug(f"Text: {markdown_text}")
+        logger.debug(f"Used refs: {used_refs_ordered}")
+        logger.debug(f"Mapping: {ref_mapping}")
+        
         # Second pass - replace references with new numbers
         for text in text_nodes:
             if re.search(reference_pattern, text):
+                # Get all matches first to determine their positions
+                matches = list(re.finditer(reference_pattern, text))
+                # Process the string from right to left to maintain correct positions
                 new_text = text
-                for match in re.finditer(reference_pattern, text):
+                current_pos = len(new_text)
+                
+                for match in reversed(matches):
                     old_ref_num = int(match.group(1))
+                    start, end = match.span()
                     
                     if old_ref_num in ref_mapping:
                         new_ref_num = ref_mapping[old_ref_num]
@@ -140,11 +150,9 @@ class Qualle:
                             f'[{new_ref_num}]'
                             f'</a>'
                         )
-
-                        logger.debug(f"[{new_ref_num}] (was [{old_ref_num}]): {ref_node.text}")
-                        logger.debug(f"[{new_ref_num}]: {data_string}")
                         
-                        new_text = new_text.replace(match.group(0), reference_html)
+                        # Replace this specific reference
+                        new_text = new_text[:start] + reference_html + new_text[end:]
                 
                 # Replace the text node with the new HTML
                 text.replace_with(BeautifulSoup(new_text, 'html.parser'))
@@ -228,7 +236,6 @@ Now reformulate the following question such that it makes sense in isolation:\n{
             response.choices[0].message.tool_calls[0].function.arguments
         )["reformulated_query"]
 
-        print(reformulated)
 
         return reformulated
 

@@ -30,7 +30,6 @@ class FlaskApp:
             def generate():
                 try:
                     for response in self.rag_service.get_response(user_message, chat_id):
-                        print(response)
                         yield json.dumps(response) + "\n"
 
                 except Exception as e:
