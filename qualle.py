@@ -149,20 +149,27 @@ class Qualle:
                 # Replace the text node with the new HTML
                 text.replace_with(BeautifulSoup(new_text, 'html.parser'))
         
-        # Store the ref_mapping and ordered refs for use in references_from_nodes
-        self._last_ref_mapping = ref_mapping
-        self._last_refs_ordered = used_refs_ordered
-        return str(soup)
+        return str(soup), used_refs_ordered
 
-    def references_from_nodes(self, nodes):
-        if not hasattr(self, '_last_refs_ordered') or not self._last_refs_ordered:
-            return ""
+    def references_from_nodes(self, nodes, used_refs_ordered=None):
+        """Generate reference list from nodes.
         
-        # List references in order of appearance
+        Args:
+            nodes: List of reference nodes
+            used_refs_ordered: Optional list of reference indices in order of appearance.
+                             If None, all references will be included in original order.
+        """
+        if not used_refs_ordered:
+            return "\n".join(
+                f"[{idx + 1}] {node.metadata[CREATOR_KEY]} ({node.metadata[TIMESTAMP_KEY]}). "
+                f"{node.metadata[TITLE_KEY]}. {node.metadata[URL_DOI_KEY]}"
+                for idx, node in enumerate(nodes)
+            )
+        
         return "\n".join(
             f"[{idx + 1}] {nodes[ref_idx].metadata[CREATOR_KEY]} ({nodes[ref_idx].metadata[TIMESTAMP_KEY]}). "
             f"{nodes[ref_idx].metadata[TITLE_KEY]}. {nodes[ref_idx].metadata[URL_DOI_KEY]}"
-            for idx, ref_idx in enumerate(self._last_refs_ordered)
+            for idx, ref_idx in enumerate(used_refs_ordered)
         )
 
     def post_process_response(self, raw_response: str) -> str:
@@ -256,7 +263,7 @@ Now reformulate the following question such that it makes sense in isolation:\n{
 
         message = response.choices[0].message.content
         processed_message = self.post_process_response(message)
-        html_message = self.process_markdown_with_references(processed_message, nodes)
+        html_message, used_refs = self.process_markdown_with_references(processed_message, nodes)
 
         self.chat_manager.add_message(chat_id, {"role": "user", "content": query})
         self.chat_manager.add_message(
@@ -266,5 +273,5 @@ Now reformulate the following question such that it makes sense in isolation:\n{
         yield {
             "status": "complete",
             "message": html_message,
-            "metadata": {"sources": self.references_from_nodes(nodes)},
+            "metadata": {"sources": self.references_from_nodes(nodes, used_refs)},
         }
