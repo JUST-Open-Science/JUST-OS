@@ -1,14 +1,84 @@
-function addMessage(message, sender) {
+function setupReferenceHandlers() {
+    document.querySelectorAll('.reference-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Remove any existing tooltips
+            document.querySelectorAll('.reference-tooltip').forEach(t => t.remove());
+            
+            // Create tooltip
+            const tooltip = document.createElement('div');
+            tooltip.className = 'reference-tooltip';
+            
+            const data = JSON.parse(this.getAttribute('data-reference'));
+            
+            tooltip.innerHTML = `
+                <div class="title">${data.title}</div>
+                <div class="metadata">${data.authors} (${data.year})</div>
+                <div class="content">${data.text}</div>
+                ${data.url ? `<a href="${data.url}" target="_blank" class="source-link">View source →</a>` : ''}
+            `;
+            
+            // Position tooltip near the click
+            const rect = this.getBoundingClientRect();
+            const tooltipX = Math.min(
+                rect.left,
+                window.innerWidth - 520 // account for tooltip width + margin
+            );
+            
+            tooltip.style.left = `${tooltipX}px`;
+            tooltip.style.top = `${rect.bottom + window.scrollY + 5}px`;
+            
+            // Add tooltip to document
+            document.body.appendChild(tooltip);
+            
+            // Adjust position if tooltip goes off-screen
+            const tooltipRect = tooltip.getBoundingClientRect();
+            if (tooltipRect.right > window.innerWidth) {
+                tooltip.style.left = `${window.innerWidth - tooltipRect.width - 20}px`;
+            }
+            if (tooltipRect.bottom > window.innerHeight) {
+                tooltip.style.top = `${rect.top + window.scrollY - tooltipRect.height - 5}px`;
+            }
+            
+            // Close tooltip when clicking outside
+            function closeTooltip(e) {
+                if (!tooltip.contains(e.target) && e.target !== link) {
+                    tooltip.remove();
+                    document.removeEventListener('click', closeTooltip);
+                }
+            }
+            
+            // Add delay before adding click listener to prevent immediate closing
+            setTimeout(() => {
+                document.addEventListener('click', closeTooltip);
+            }, 0);
+        });
+    });
+}
+
+function addMessage(message, sender, sources=null) {
     const chatMessages = document.getElementById('chat-messages');
 
     const messageDiv = document.createElement('div');
     messageDiv.classList.add('message', `${sender}-message`);
 
-    // Only render markdown for bot messages
     if (sender === 'bot') {
-        messageDiv.innerHTML = marked.parse(message);
+        messageDiv.innerHTML = message;
+        // Setup reference handlers after adding bot message
+        setTimeout(() => {
+            setupReferenceHandlers();
+        }, 0);
     } else {
         messageDiv.textContent = message;
+    }
+
+    if (sources !== null) {
+        const sourcesDiv = document.createElement('div');
+        sourcesDiv.classList.add('sources');
+        sourcesDiv.textContent = sources;
+        messageDiv.appendChild(sourcesDiv);
     }
 
     chatMessages.appendChild(messageDiv);
@@ -50,9 +120,6 @@ async function sendMessage(message) {
         messageInput.disabled = false;
         sendButton.style.display = 'block';
         statusMessage.innerText = '';
-        // cancelButton.style.display = 'none';
-        // loadingMessageDiv.removeChild(loadingMessageBox);
-        // eventSource.close();     
     }
 
     try {
@@ -61,13 +128,13 @@ async function sendMessage(message) {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ message: message, chat_id: chatId})
+            body: JSON.stringify({ message: message, chat_id: chatId })
         });
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
 
         while (true) {
-            const {value, done} = await reader.read();
+            const { value, done } = await reader.read();
             if (done) break;
 
             const messages = decoder.decode(value).split('\n');
@@ -80,6 +147,7 @@ async function sendMessage(message) {
                     if (data.status === 'complete') {
                         endStream();
                         addMessage(data.message, 'bot');
+
                     } else {
                         baseMessage = data.message;
                     }
@@ -90,7 +158,7 @@ async function sendMessage(message) {
         console.error('Error:', error);
         updateStatus('Error: Failed to get response');
     }
-    
+
 
 
 
@@ -103,11 +171,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     userInput.value = "How does open science reshape the future of interdisciplinary and collaborative research?";
 
-    userInput.addEventListener('input', function() {
+    userInput.addEventListener('input', function () {
         sendButton.disabled = this.value.length < 3;
     });
 
-    userInput.addEventListener('keydown', function(event) {
+    userInput.addEventListener('keydown', function (event) {
         if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
             if (!sendButton.disabled) {
@@ -116,7 +184,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    sendButton.addEventListener('click', function() {
+    sendButton.addEventListener('click', function () {
         const message = userInput.value;
         userInput.value = '';
         sendMessage(message);
@@ -130,78 +198,4 @@ function requestBody(message) {
     })
 }
 
-
-
-
-    // function updateStatus(message) {
-    //     statusMessage.textContent = message;
-    // }
-
-    // function updateLastBotMessage(message) {
-    //     const botMessages = document.getElementsByClassName('bot-message');
-    //     if (botMessages.length > 0) {
-    //         const lastBotMessage = botMessages[botMessages.length - 1];
-    //         lastBotMessage.innerHTML = marked.parse(message);
-    //     } else {
-    //         addMessage(message, 'bot');
-    //     }
-    //     chatMessages.scrollTop = chatMessages.scrollHeight;
-    // }
-
-
-    // // chat.js
-    // async function sendMessage() {
-    //     welcomeMessage.textContent = '';
-
-    //     const message = userInput.value.trim();
-    //     if (message === '') return;
-
-    //     addMessage(message, 'user');
-    //     userInput.value = '';
-
-    //     try {
-    //         const response = await fetch('/chat', {
-    //             method: 'POST',
-    //             headers: {
-    //                 'Content-Type': 'application/json',
-    //             },
-    //             body: JSON.stringify({ message: message })
-    //         });
-
-    //         const reader = response.body.getReader();
-    //         const decoder = new TextDecoder();
-
-    //         while (true) {
-    //             const {value, done} = await reader.read();
-    //             if (done) break;
-
-    //             const messages = decoder.decode(value).split('\n');
-
-    //             for (const message of messages) {
-    //                 if (message) {  // check for non-empty messages
-    //                     const data = JSON.parse(message);
-    //                     if (data.status === 'complete') {
-    //                         updateStatus('');
-    //                         addMessage(data.message, 'bot');
-    //                     } else if (data.status === 'generating') {
-    //                         addMessage(data.message, 'bot');
-    //                     } else {
-    //                         updateStatus(data.message);
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     } catch (error) {
-    //         console.error('Error:', error);
-    //         updateStatus('Error: Failed to get response');
-    //     }
-    // }
-
-    // sendButton.addEventListener('click', sendMessage);
-    // userInput.addEventListener('keypress', function (e) {
-    //     if (e.key === 'Enter') {
-    //         sendMessage();
-    //     }
-    // });
 const chatId = crypto.randomUUID();
-console.log(chatId);

@@ -7,9 +7,15 @@ from openai import OpenAI
 from openscholar import generation_instance_prompts_w_references, system_prompt
 from chat_manager import ChatManager
 
+from bs4 import BeautifulSoup
+import re
+
+import markdown
+
 from threading import Lock
 
 import json
+import html
 
 import logging
 
@@ -76,6 +82,64 @@ class Qualle:
             f"[{idx}] Title: {node.metadata[TITLE_KEY]} Text: {' '.join(node.text.split())}"
             for idx, node in enumerate(nodes)
         )
+
+    def process_markdown_with_references(self, markdown_text, references_nodes):
+        """Convert markdown to HTML and add clickable references with tooltips"""
+        # First convert markdown to HTML
+        html_text = markdown.markdown(markdown_text)
+        
+        # Parse the HTML
+        soup = BeautifulSoup(html_text, 'html.parser')
+        
+        # Find all reference patterns like [1], [2], etc.
+        reference_pattern = r'\[(\d+)\]'
+        
+        # Get all text nodes
+        text_nodes = soup.find_all(text=True)
+        
+        for text in text_nodes:
+            if re.search(reference_pattern, text):
+                new_text = text
+                for match in re.finditer(reference_pattern, text):
+                    ref_num = match.group(1)
+                    ref_idx = int(ref_num)
+                    
+                    if ref_idx < len(references_nodes):
+                        # Get reference details
+                        ref_node = references_nodes[ref_idx]
+                        
+                        # Create reference data
+                        reference_data = {
+                            "title": ref_node.metadata[TITLE_KEY],
+                            "authors": ref_node.metadata[CREATOR_KEY],
+                            "year": ref_node.metadata[TIMESTAMP_KEY],
+                            "url": ref_node.metadata[URL_DOI_KEY],
+                            "text": html.escape(ref_node.text),
+                        }
+
+                        # Create JSON string and escape special characters for HTML safety
+                        data_string = json.dumps(reference_data, ensure_ascii=True, 
+                                               separators=(',', ':'))
+                        # HTML escape the entire data string for safe attribute insertion
+                        escaped_data_string = html.escape(data_string, quote=True)
+                        
+                        # Create the reference link with data attributes
+                        reference_html = (
+                            f'<a href="#" class="reference-link" '
+                            f'data-reference="{escaped_data_string}">'
+                            f'[{ref_num}]'
+                            f'</a>'
+                        )
+
+                        logger.debug(f"[{ref_num}]: {ref_node.text}")
+                        logger.debug(f"[{ref_num}]: {data_string}")
+                        
+                        new_text = new_text.replace(match.group(0), reference_html)
+                
+                # Replace the text node with the new HTML
+                text.replace_with(BeautifulSoup(new_text, 'html.parser'))
+        
+        return str(soup)
 
     def references_from_nodes(self, nodes):
         return "\n".join(
@@ -175,6 +239,7 @@ Now reformulate the following question such that it makes sense in isolation:\n{
 
         message = response.choices[0].message.content
         processed_message = self.post_process_response(message)
+        html_message = self.process_markdown_with_references(processed_message, nodes)
 
         self.chat_manager.add_message(chat_id, {"role": "user", "content": query})
         self.chat_manager.add_message(
@@ -183,6 +248,6 @@ Now reformulate the following question such that it makes sense in isolation:\n{
 
         yield {
             "status": "complete",
-            "message": processed_message,
+            "message": html_message,
             "metadata": {"sources": self.references_from_nodes(nodes)},
         }
