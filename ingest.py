@@ -10,7 +10,7 @@ from llama_index.vector_stores.faiss import FaissVectorStore
 from llama_index.core import Settings
 
 if __name__ == "__main__":
-    Settings.chunk_size = 350
+    Settings.chunk_size = 120
     datadir = Path("data")
 
     identifier_column = "JUST-OS internal identifier"
@@ -47,4 +47,4 @@ if __name__ == "__main__":
         embed_model=embed_model,
         show_progress=True,
     )
-    index.storage_context.persist("data/interim/vs_241218_bge-small-en-v1.5")
+    index.storage_context.persist("data/interim/vs_250424_bge-small-en-v1.5")
