@@ -94,19 +94,29 @@ class Qualle:
         # Find all reference patterns like [1], [2], etc.
         reference_pattern = r'\[(\d+)\]'
         
-        # Get all text nodes
+        # Get all text nodes and track references in order of appearance
         text_nodes = soup.find_all(text=True)
+        used_refs_ordered = []  # Will store refs in order of appearance
+        ref_mapping = {}  # Maps old ref numbers to new ones
         
+        # First pass - collect references in order of appearance
+        for text in text_nodes:
+            for match in re.finditer(reference_pattern, text):
+                ref_idx = int(match.group(1))
+                if ref_idx < len(references_nodes) and ref_idx not in ref_mapping:
+                    used_refs_ordered.append(ref_idx)
+                    ref_mapping[ref_idx] = len(used_refs_ordered)  # New number is position + 1
+        
+        # Second pass - replace references with new numbers
         for text in text_nodes:
             if re.search(reference_pattern, text):
                 new_text = text
                 for match in re.finditer(reference_pattern, text):
-                    ref_num = match.group(1)
-                    ref_idx = int(ref_num)
+                    old_ref_num = int(match.group(1))
                     
-                    if ref_idx < len(references_nodes):
-                        # Get reference details
-                        ref_node = references_nodes[ref_idx]
+                    if old_ref_num in ref_mapping:
+                        new_ref_num = ref_mapping[old_ref_num]
+                        ref_node = references_nodes[old_ref_num]
                         
                         # Create reference data
                         reference_data = {
@@ -123,29 +133,36 @@ class Qualle:
                         # HTML escape the entire data string for safe attribute insertion
                         escaped_data_string = html.escape(data_string, quote=True)
                         
-                        # Create the reference link with data attributes
+                        # Create the reference link with data attributes using new number
                         reference_html = (
                             f'<a href="#" class="reference-link" '
                             f'data-reference="{escaped_data_string}">'
-                            f'[{ref_num}]'
+                            f'[{new_ref_num}]'
                             f'</a>'
                         )
 
-                        logger.debug(f"[{ref_num}]: {ref_node.text}")
-                        logger.debug(f"[{ref_num}]: {data_string}")
+                        logger.debug(f"[{new_ref_num}] (was [{old_ref_num}]): {ref_node.text}")
+                        logger.debug(f"[{new_ref_num}]: {data_string}")
                         
                         new_text = new_text.replace(match.group(0), reference_html)
                 
                 # Replace the text node with the new HTML
                 text.replace_with(BeautifulSoup(new_text, 'html.parser'))
         
+        # Store the ref_mapping and ordered refs for use in references_from_nodes
+        self._last_ref_mapping = ref_mapping
+        self._last_refs_ordered = used_refs_ordered
         return str(soup)
 
     def references_from_nodes(self, nodes):
+        if not hasattr(self, '_last_refs_ordered') or not self._last_refs_ordered:
+            return ""
+        
+        # List references in order of appearance
         return "\n".join(
-            f"[{idx}] {node.metadata[CREATOR_KEY]} ({node.metadata[TIMESTAMP_KEY]}). "
-            f"{node.metadata[TITLE_KEY]}. {node.metadata[URL_DOI_KEY]}"
-            for idx, node in enumerate(nodes)
+            f"[{idx + 1}] {nodes[ref_idx].metadata[CREATOR_KEY]} ({nodes[ref_idx].metadata[TIMESTAMP_KEY]}). "
+            f"{nodes[ref_idx].metadata[TITLE_KEY]}. {nodes[ref_idx].metadata[URL_DOI_KEY]}"
+            for idx, ref_idx in enumerate(self._last_refs_ordered)
         )
 
     def post_process_response(self, raw_response: str) -> str:
