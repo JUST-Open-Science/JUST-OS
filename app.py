@@ -1,14 +1,11 @@
-# app.py
 import json
 
 import yaml
 from flask import Flask, Response, render_template, request
 
-from config import WELCOME_MESSAGE
 from qualle import Qualle
 from chat_manager import ChatManager
 from redis import Redis
-
 
 
 class FlaskApp:
@@ -20,7 +17,7 @@ class FlaskApp:
     def setup_routes(self):
         @self.app.route("/")
         def home():
-            return render_template("index.html", welcome_message=WELCOME_MESSAGE)
+            return render_template("index.html")
 
         @self.app.route("/chat", methods=["POST"])
         def chat():
@@ -29,18 +26,23 @@ class FlaskApp:
 
             def generate():
                 try:
-                    for response in self.rag_service.get_response(user_message, chat_id):
+                    for response in self.rag_service.get_response(
+                        user_message, chat_id
+                    ):
                         yield json.dumps(response) + "\n"
 
                 except Exception as e:
                     print(f"Error: {str(e)}")
                     print(response)
-                    yield json.dumps(
-                        {
-                            "status": "error",
-                            "message": "An error occurred while processing your request.",
-                        }
-                    ) + "\n"
+                    yield (
+                        json.dumps(
+                            {
+                                "status": "error",
+                                "message": "An error occurred while processing your request.",
+                            }
+                        )
+                        + "\n"
+                    )
 
             return Response(generate(), mimetype="text/event-stream")
 
