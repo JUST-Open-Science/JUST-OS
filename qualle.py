@@ -1,23 +1,15 @@
-# rag_service.py
+import html
+import json
+import logging
 import os
-from llama_index.core import StorageContext, load_index_from_storage
-from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-from llama_index.vector_stores.faiss import FaissVectorStore
-from openai import OpenAI
-from openscholar import generation_instance_prompts_w_references, system_prompt
-from chat_manager import ChatManager
-
-from bs4 import BeautifulSoup
 import re
 
 import markdown
+from bs4 import BeautifulSoup
+from openai import OpenAI
 
-from threading import Lock
-
-import json
-import html
-
-import logging
+from chat_manager import ChatManager
+from openscholar import generation_instance_prompts_w_references, system_prompt
 
 logging.basicConfig(
     # level=logging.DEBUG,
@@ -38,41 +30,18 @@ URL_DOI_KEY = (
 
 
 class Qualle:
-    _init_lock = Lock()
-    _retrieve_lock = Lock()
-    _retriever = None
-    _embed_model = None
-
-    @classmethod
-    def initialize(cls, config):
-        """Initialize the static components once"""
-        with cls._init_lock:
-            if cls._retriever is None:
-                logger.debug("Initializing static components")
-                cls._embed_model = HuggingFaceEmbedding(
-                    model_name=config["embedding_model"]
-                )
-                persist_dir = config["vector_store"]
-                vector_store = FaissVectorStore.from_persist_dir(persist_dir)
-                storage_context = StorageContext.from_defaults(
-                    vector_store=vector_store, persist_dir=persist_dir
-                )
-                index = load_index_from_storage(
-                    storage_context=storage_context, embed_model=cls._embed_model
-                )
-                cls._retriever = index.as_retriever(similarity_top_k=5)
-
-    def __init__(self, config, chat_manager: ChatManager):
-        # Initialize static components
-        Qualle.initialize(config)
-
+    def __init__(self, config, chat_manager: ChatManager, embed_model, retriever):
         self.config = config
+        self.chat_manager = chat_manager
+        self.system_prompt = system_prompt
+        self.prompt_template = generation_instance_prompts_w_references
+        self._embed_model = embed_model
+        self._retriever = retriever
+
+        # Initialize OpenAI client
         self.client = OpenAI(
             api_key=os.getenv("RUGLLM_API_KEY"), base_url=self.config["base_url"]
         )
-        self.system_prompt = system_prompt
-        self.prompt_template = generation_instance_prompts_w_references
-        self.chat_manager = chat_manager
 
     def _init_client(self):
         return
@@ -87,30 +56,32 @@ class Qualle:
         """Convert markdown to HTML and add clickable references with tooltips"""
         # First convert markdown to HTML
         html_text = markdown.markdown(markdown_text)
-        
+
         # Parse the HTML
-        soup = BeautifulSoup(html_text, 'html.parser')
-        
+        soup = BeautifulSoup(html_text, "html.parser")
+
         # Find all reference patterns like [1], [2], etc.
-        reference_pattern = r'\[(\d+)\]'
-        
+        reference_pattern = r"\[(\d+)\]"
+
         # Get all text nodes and track references in order of appearance
         text_nodes = soup.find_all(text=True)
         used_refs_ordered = []  # Will store refs in order of appearance
         ref_mapping = {}  # Maps old ref numbers to new ones
-        
+
         # First pass - collect references in order of appearance
         for text in text_nodes:
             for match in re.finditer(reference_pattern, text):
                 ref_idx = int(match.group(1))
                 if ref_idx < len(references_nodes) and ref_idx not in ref_mapping:
                     used_refs_ordered.append(ref_idx)
-                    ref_mapping[ref_idx] = len(used_refs_ordered)  # New number is position + 1
-        
+                    ref_mapping[ref_idx] = len(
+                        used_refs_ordered
+                    )  # New number is position + 1
+
         logger.debug(f"Text: {markdown_text}")
         logger.debug(f"Used refs: {used_refs_ordered}")
         logger.debug(f"Mapping: {ref_mapping}")
-        
+
         # Second pass - replace references with new numbers
         for text in text_nodes:
             if re.search(reference_pattern, text):
@@ -118,16 +89,15 @@ class Qualle:
                 matches = list(re.finditer(reference_pattern, text))
                 # Process the string from right to left to maintain correct positions
                 new_text = text
-                current_pos = len(new_text)
-                
+
                 for match in reversed(matches):
                     old_ref_num = int(match.group(1))
                     start, end = match.span()
-                    
+
                     if old_ref_num in ref_mapping:
                         new_ref_num = ref_mapping[old_ref_num]
                         ref_node = references_nodes[old_ref_num]
-                        
+
                         # Create reference data
                         reference_data = {
                             "title": ref_node.metadata[TITLE_KEY],
@@ -138,30 +108,31 @@ class Qualle:
                         }
 
                         # Create JSON string and escape special characters for HTML safety
-                        data_string = json.dumps(reference_data, ensure_ascii=True, 
-                                               separators=(',', ':'))
+                        data_string = json.dumps(
+                            reference_data, ensure_ascii=True, separators=(",", ":")
+                        )
                         # HTML escape the entire data string for safe attribute insertion
                         escaped_data_string = html.escape(data_string, quote=True)
-                        
+
                         # Create the reference link with data attributes using new number
                         reference_html = (
                             f'<a href="#" class="reference-link" '
                             f'data-reference="{escaped_data_string}">'
-                            f'[{new_ref_num}]'
-                            f'</a>'
+                            f"[{new_ref_num}]"
+                            f"</a>"
                         )
-                        
+
                         # Replace this specific reference
                         new_text = new_text[:start] + reference_html + new_text[end:]
-                
+
                 # Replace the text node with the new HTML
-                text.replace_with(BeautifulSoup(new_text, 'html.parser'))
-        
+                text.replace_with(BeautifulSoup(new_text, "html.parser"))
+
         return str(soup), used_refs_ordered
 
     def references_from_nodes(self, nodes, used_refs_ordered=None):
         """Generate reference list from nodes.
-        
+
         Args:
             nodes: List of reference nodes
             used_refs_ordered: Optional list of reference indices in order of appearance.
@@ -173,7 +144,7 @@ class Qualle:
                 f"{node.metadata[TITLE_KEY]}. {node.metadata[URL_DOI_KEY]}"
                 for idx, node in enumerate(nodes)
             )
-        
+
         return "\n".join(
             f"[{idx + 1}] {nodes[ref_idx].metadata[CREATOR_KEY]} ({nodes[ref_idx].metadata[TIMESTAMP_KEY]}). "
             f"{nodes[ref_idx].metadata[TITLE_KEY]}. {nodes[ref_idx].metadata[URL_DOI_KEY]}"
@@ -236,7 +207,6 @@ Now reformulate the following question such that it makes sense in isolation:\n{
             response.choices[0].message.tool_calls[0].function.arguments
         )["reformulated_query"]
 
-
         return reformulated
 
     def get_response(self, query, chat_id):
@@ -250,8 +220,7 @@ Now reformulate the following question such that it makes sense in isolation:\n{
 
         yield {"status": "in-progress", "message": "Finding relevant sources"}
         logger.debug("Retrieving relevant nodes for query")
-        with self._retrieve_lock:
-            nodes = self._retriever.retrieve(query)
+        nodes = self._retriever.retrieve(query)
         context = self.context_from_nodes(nodes)
         prompt = self.prompt_template.format(context_items=context, query=query)
 
@@ -270,7 +239,9 @@ Now reformulate the following question such that it makes sense in isolation:\n{
 
         message = response.choices[0].message.content
         processed_message = self.post_process_response(message)
-        html_message, used_refs = self.process_markdown_with_references(processed_message, nodes)
+        html_message, used_refs = self.process_markdown_with_references(
+            processed_message, nodes
+        )
 
         self.chat_manager.add_message(chat_id, {"role": "user", "content": query})
         self.chat_manager.add_message(

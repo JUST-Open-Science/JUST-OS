@@ -1,17 +1,25 @@
 import json
+import logging
 
 import yaml
 from flask import Flask, Response, render_template, request
-
-from qualle import Qualle
-from chat_manager import ChatManager
+from llama_index.core import StorageContext, load_index_from_storage
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+from llama_index.vector_stores.faiss import FaissVectorStore
 from redis import Redis
+
+from chat_manager import ChatManager
+from qualle import Qualle
+
+logger = logging.getLogger(__name__)
 
 
 class FlaskApp:
     def __init__(self):
         self.app = Flask(__name__)
         self.chat_manager = ChatManager(Redis(host="localhost", port=6379, db=0))
+        self._embed_model = None
+        self._retriever = None
         self.setup_routes()
 
     def setup_routes(self):
@@ -48,7 +56,26 @@ class FlaskApp:
 
     def create_app(self, config):
         self.config = config
-        self.rag_service = Qualle(config, self.chat_manager)
+
+        # Initialize embedding model and retriever once
+        if self._embed_model is None:
+            logger.debug("Initializing components")
+            self._embed_model = HuggingFaceEmbedding(
+                model_name=config["embedding_model"]
+            )
+            persist_dir = config["vector_store"]
+            vector_store = FaissVectorStore.from_persist_dir(persist_dir)
+            storage_context = StorageContext.from_defaults(
+                vector_store=vector_store, persist_dir=persist_dir
+            )
+            index = load_index_from_storage(
+                storage_context=storage_context, embed_model=self._embed_model
+            )
+            self._retriever = index.as_retriever(similarity_top_k=5)
+
+        self.rag_service = Qualle(
+            config, self.chat_manager, self._embed_model, self._retriever
+        )
         return self.app
 
 
