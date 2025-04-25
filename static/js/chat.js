@@ -157,8 +157,8 @@ async function sendMessage(message) {
 
             for (const message of messages) {
                 if (message) {  // check for non-empty messages
+                    console.log(message)
                     const data = JSON.parse(message);
-                    console.log(data.message)
 
                     if (data.status === 'complete') {
                         endStream();
@@ -172,7 +172,6 @@ async function sendMessage(message) {
         }
     } catch (error) {
         console.error('Error:', error);
-        updateStatus('Error: Failed to get response');
     }
 
 
