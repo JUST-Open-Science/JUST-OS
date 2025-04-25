@@ -1,38 +1,38 @@
 function setupReferenceHandlers() {
     document.querySelectorAll('.reference-link').forEach(link => {
-        link.addEventListener('click', function(e) {
+        link.addEventListener('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
-            
+
             // Remove any existing tooltips
             document.querySelectorAll('.reference-tooltip').forEach(t => t.remove());
-            
+
             // Create tooltip
             const tooltip = document.createElement('div');
             tooltip.className = 'reference-tooltip';
-            
+
             const data = JSON.parse(this.getAttribute('data-reference'));
-            
+
             tooltip.innerHTML = `
                 <div class="title">${data.title}</div>
                 <div class="metadata">${data.authors} (${data.year})</div>
                 <div class="content">${data.text}</div>
                 ${data.url ? `<a href="${data.url}" target="_blank" class="source-link">View source →</a>` : ''}
             `;
-            
+
             // Position tooltip near the click
             const rect = this.getBoundingClientRect();
             const tooltipX = Math.min(
                 rect.left,
                 window.innerWidth - 520 // account for tooltip width + margin
             );
-            
+
             tooltip.style.left = `${tooltipX}px`;
             tooltip.style.top = `${rect.bottom + window.scrollY + 5}px`;
-            
+
             // Add tooltip to document
             document.body.appendChild(tooltip);
-            
+
             // Adjust position if tooltip goes off-screen
             const tooltipRect = tooltip.getBoundingClientRect();
             if (tooltipRect.right > window.innerWidth) {
@@ -41,7 +41,7 @@ function setupReferenceHandlers() {
             if (tooltipRect.bottom > window.innerHeight) {
                 tooltip.style.top = `${rect.top + window.scrollY - tooltipRect.height - 5}px`;
             }
-            
+
             // Close tooltip when clicking outside
             function closeTooltip(e) {
                 if (!tooltip.contains(e.target) && e.target !== link) {
@@ -49,7 +49,7 @@ function setupReferenceHandlers() {
                     document.removeEventListener('click', closeTooltip);
                 }
             }
-            
+
             // Add delay before adding click listener to prevent immediate closing
             setTimeout(() => {
                 document.addEventListener('click', closeTooltip);
@@ -58,7 +58,7 @@ function setupReferenceHandlers() {
     });
 }
 
-function addMessage(message, sender, sources=null) {
+function addMessage(message, sender, sources = null) {
     const chatMessages = document.getElementById('chat-messages');
 
     const messageDiv = document.createElement('div');
@@ -82,7 +82,7 @@ function addMessage(message, sender, sources=null) {
     }
 
     chatMessages.appendChild(messageDiv);
-    
+
     // If this is a bot message, scroll the previous user message to the top
     if (sender === 'bot') {
         const messages = chatMessages.getElementsByClassName('message');
@@ -105,7 +105,9 @@ async function sendMessage(message) {
     console.log('user message: ' + message);
     if (message) {
         const userMessageBox = document.createElement('div');
-        userMessageBox.innerText = message;
+        const messageP = document.createElement('p');
+        messageP.innerText = message;
+        userMessageBox.appendChild(messageP);
         userMessageBox.classList.add('message', 'user-message');
         chatMessages.appendChild(userMessageBox);
     }
@@ -208,15 +210,15 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Modal functionality
-    infoButton.addEventListener('click', function() {
+    infoButton.addEventListener('click', function () {
         modal.style.display = 'block';
     });
 
-    closeModal.addEventListener('click', function() {
+    closeModal.addEventListener('click', function () {
         modal.style.display = 'none';
     });
 
-    window.addEventListener('click', function(event) {
+    window.addEventListener('click', function (event) {
         if (event.target === modal) {
             modal.style.display = 'none';
         }

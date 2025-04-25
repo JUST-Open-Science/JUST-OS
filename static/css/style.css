@@ -31,7 +31,9 @@ body {
 }
 
 /* Common styles for info boxes */
-.message, .reference-tooltip, .modal-content {
+.message,
+.reference-tooltip,
+.modal-content {
     background-color: white;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -39,6 +41,12 @@ body {
     line-height: 1.6;
     margin-bottom: 20px;
 }
+
+.message {
+    padding: 0px 16px
+}
+
+
 
 #container {
     margin: auto;
@@ -86,14 +94,24 @@ textarea#user-input {
 }
 
 
+.user-message,
+.bot-message {
+    max-width: 80%;
+    width: fit-content;
+}
+
 .user-message {
     margin-left: 10%;
+    margin-right: 0;
     border-left: 3px solid #8e0000;
+    align-self: flex-end;
 }
 
 .bot-message {
     margin-right: 10%;
+    margin-left: 0;
     border-right: 3px solid #004055;
+    align-self: flex-start;
 }
 
 .bot-message h1,
@@ -151,10 +169,9 @@ textarea#user-input {
 }
 
 #chat-messages {
-    margin-bottom: 10px;
-    word-wrap: break-word;
-    margin: 0px;
-    margin-block-end: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
 }
 
 button#send-button,
