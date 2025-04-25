@@ -28,6 +28,8 @@ URL_DOI_KEY = (
     "URL/DOI (please check DOI by collating DOI at the end of https://doi.org/ )"
 )
 
+NON_OS_RESPONSE = "Sorry, I'm only able to answer questions related to Open Science."
+
 
 class Qualle:
     def __init__(self, config, chat_manager: ChatManager, embed_model, retriever):
@@ -159,6 +161,52 @@ class Qualle:
             response = response.split("[Response_End]")[0]
         return response
 
+    def classify_query(self, query):
+        prompt = f"""You are an Open Science expert.
+Classify whether the following query is about Open Science:
+"{query}"
+Return your answer as a valid JSON object with a single boolean entry "concerns_open_science"
+"""
+
+        history_openai_format = [
+            {"role": "user", "content": prompt},
+        ]
+
+        tools = [
+            {
+                "type": "function",
+                "function": {
+                    "name": "structure_output",
+                    "description": "Send structured output back to the user",
+                    "strict": True,
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "concerns_open_science": {"type": "boolean"},
+                        },
+                        "required": ["concerns_open_science"],
+                        "additionalProperties": False,
+                    },
+                    "additionalProperties": False,
+                },
+            }
+        ]
+        tool_choice = {"type": "function", "function": {"name": "structure_output"}}
+
+        response = self.client.chat.completions.create(
+            model=self.config["general_model"],
+            messages=history_openai_format,
+            temperature=self.config.get("temperature_general", 0.3),
+            tools=tools,
+            tool_choice=tool_choice,
+        )
+
+        concerns_open_science = json.loads(
+            response.choices[0].message.tool_calls[0].function.arguments
+        )["concerns_open_science"]
+
+        return concerns_open_science
+
     def rephrase_query(self, query, chat_id):
         prompt = "Given the following dialogue history:\n"
         for message in self.chat_manager.get_history(chat_id):
@@ -218,38 +266,51 @@ Now reformulate the following question such that it makes sense in isolation:\n{
             yield {"status": "in-progress", "message": "Reformulating question"}
             query = self.rephrase_query(query, chat_id)
 
-        yield {"status": "in-progress", "message": "Finding relevant sources"}
-        logger.debug("Retrieving relevant nodes for query")
-        nodes = self._retriever.retrieve(query)
-        context = self.context_from_nodes(nodes)
-        prompt = self.prompt_template.format(context_items=context, query=query)
+        yield {"status": "in-progress", "message": "Classifying question"}
+        concerns_open_science = self.classify_query(query)
+        if concerns_open_science:
+            yield {"status": "in-progress", "message": "Finding relevant sources"}
+            logger.debug("Retrieving relevant nodes for query")
+            nodes = self._retriever.retrieve(query)
+            context = self.context_from_nodes(nodes)
+            prompt = self.prompt_template.format(context_items=context, query=query)
 
-        history_openai_format = [
-            {"role": "system", "content": self.system_prompt},
-            {"role": "user", "content": prompt},
-        ]
+            history_openai_format = [
+                {"role": "system", "content": self.system_prompt},
+                {"role": "user", "content": prompt},
+            ]
 
-        yield {"status": "in-progress", "message": "Generating response"}
+            yield {"status": "in-progress", "message": "Generating response"}
 
-        response = self.client.chat.completions.create(
-            model=self.config["citation_model"],
-            messages=history_openai_format,
-            temperature=self.config.get("temperature", 0.3),
-        )
+            response = self.client.chat.completions.create(
+                model=self.config["citation_model"],
+                messages=history_openai_format,
+                temperature=self.config.get("temperature", 0.3),
+            )
 
-        message = response.choices[0].message.content
-        processed_message = self.post_process_response(message)
-        html_message, used_refs = self.process_markdown_with_references(
-            processed_message, nodes
-        )
+            message = response.choices[0].message.content
+            processed_message = self.post_process_response(message)
+            html_message, used_refs = self.process_markdown_with_references(
+                processed_message, nodes
+            )
 
-        self.chat_manager.add_message(chat_id, {"role": "user", "content": query})
-        self.chat_manager.add_message(
-            chat_id, {"role": "assistant", "content": processed_message}
-        )
+            self.chat_manager.add_message(chat_id, {"role": "user", "content": query})
+            self.chat_manager.add_message(
+                chat_id, {"role": "assistant", "content": processed_message}
+            )
 
-        yield {
-            "status": "complete",
-            "message": html_message,
-            "metadata": {"sources": self.references_from_nodes(nodes, used_refs)},
-        }
+            yield {
+                "status": "complete",
+                "message": html_message,
+                "metadata": {"sources": self.references_from_nodes(nodes, used_refs)},
+            }
+        else:
+            self.chat_manager.add_message(chat_id, {"role": "user", "content": query})
+            self.chat_manager.add_message(
+                chat_id, {"role": "assistant", "content": NON_OS_RESPONSE}
+            )
+
+            yield {
+                "status": "complete",
+                "message": markdown.markdown(NON_OS_RESPONSE),
+            }
