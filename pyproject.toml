@@ -21,6 +21,7 @@ dependencies = [
     "datasets>=3.2.0",
     "redis>=5.2.1",
     "gunicorn>=23.0.0",
+    "markdown>=3.8",
 ]
 
 [tool.uv.sources]
