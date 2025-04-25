@@ -94,19 +94,39 @@ class Qualle:
         # Find all reference patterns like [1], [2], etc.
         reference_pattern = r'\[(\d+)\]'
         
-        # Get all text nodes
+        # Get all text nodes and track references in order of appearance
         text_nodes = soup.find_all(text=True)
+        used_refs_ordered = []  # Will store refs in order of appearance
+        ref_mapping = {}  # Maps old ref numbers to new ones
         
+        # First pass - collect references in order of appearance
+        for text in text_nodes:
+            for match in re.finditer(reference_pattern, text):
+                ref_idx = int(match.group(1))
+                if ref_idx < len(references_nodes) and ref_idx not in ref_mapping:
+                    used_refs_ordered.append(ref_idx)
+                    ref_mapping[ref_idx] = len(used_refs_ordered)  # New number is position + 1
+        
+        logger.debug(f"Text: {markdown_text}")
+        logger.debug(f"Used refs: {used_refs_ordered}")
+        logger.debug(f"Mapping: {ref_mapping}")
+        
+        # Second pass - replace references with new numbers
         for text in text_nodes:
             if re.search(reference_pattern, text):
+                # Get all matches first to determine their positions
+                matches = list(re.finditer(reference_pattern, text))
+                # Process the string from right to left to maintain correct positions
                 new_text = text
-                for match in re.finditer(reference_pattern, text):
-                    ref_num = match.group(1)
-                    ref_idx = int(ref_num)
+                current_pos = len(new_text)
+                
+                for match in reversed(matches):
+                    old_ref_num = int(match.group(1))
+                    start, end = match.span()
                     
-                    if ref_idx < len(references_nodes):
-                        # Get reference details
-                        ref_node = references_nodes[ref_idx]
+                    if old_ref_num in ref_mapping:
+                        new_ref_num = ref_mapping[old_ref_num]
+                        ref_node = references_nodes[old_ref_num]
                         
                         # Create reference data
                         reference_data = {
@@ -123,29 +143,41 @@ class Qualle:
                         # HTML escape the entire data string for safe attribute insertion
                         escaped_data_string = html.escape(data_string, quote=True)
                         
-                        # Create the reference link with data attributes
+                        # Create the reference link with data attributes using new number
                         reference_html = (
                             f'<a href="#" class="reference-link" '
                             f'data-reference="{escaped_data_string}">'
-                            f'[{ref_num}]'
+                            f'[{new_ref_num}]'
                             f'</a>'
                         )
-
-                        logger.debug(f"[{ref_num}]: {ref_node.text}")
-                        logger.debug(f"[{ref_num}]: {data_string}")
                         
-                        new_text = new_text.replace(match.group(0), reference_html)
+                        # Replace this specific reference
+                        new_text = new_text[:start] + reference_html + new_text[end:]
                 
                 # Replace the text node with the new HTML
                 text.replace_with(BeautifulSoup(new_text, 'html.parser'))
         
-        return str(soup)
+        return str(soup), used_refs_ordered
 
-    def references_from_nodes(self, nodes):
+    def references_from_nodes(self, nodes, used_refs_ordered=None):
+        """Generate reference list from nodes.
+        
+        Args:
+            nodes: List of reference nodes
+            used_refs_ordered: Optional list of reference indices in order of appearance.
+                             If None, all references will be included in original order.
+        """
+        if not used_refs_ordered:
+            return "\n".join(
+                f"[{idx + 1}] {node.metadata[CREATOR_KEY]} ({node.metadata[TIMESTAMP_KEY]}). "
+                f"{node.metadata[TITLE_KEY]}. {node.metadata[URL_DOI_KEY]}"
+                for idx, node in enumerate(nodes)
+            )
+        
         return "\n".join(
-            f"[{idx}] {node.metadata[CREATOR_KEY]} ({node.metadata[TIMESTAMP_KEY]}). "
-            f"{node.metadata[TITLE_KEY]}. {node.metadata[URL_DOI_KEY]}"
-            for idx, node in enumerate(nodes)
+            f"[{idx + 1}] {nodes[ref_idx].metadata[CREATOR_KEY]} ({nodes[ref_idx].metadata[TIMESTAMP_KEY]}). "
+            f"{nodes[ref_idx].metadata[TITLE_KEY]}. {nodes[ref_idx].metadata[URL_DOI_KEY]}"
+            for idx, ref_idx in enumerate(used_refs_ordered)
         )
 
     def post_process_response(self, raw_response: str) -> str:
@@ -204,7 +236,6 @@ Now reformulate the following question such that it makes sense in isolation:\n{
             response.choices[0].message.tool_calls[0].function.arguments
         )["reformulated_query"]
 
-        print(reformulated)
 
         return reformulated
 
@@ -239,7 +270,7 @@ Now reformulate the following question such that it makes sense in isolation:\n{
 
         message = response.choices[0].message.content
         processed_message = self.post_process_response(message)
-        html_message = self.process_markdown_with_references(processed_message, nodes)
+        html_message, used_refs = self.process_markdown_with_references(processed_message, nodes)
 
         self.chat_manager.add_message(chat_id, {"role": "user", "content": query})
         self.chat_manager.add_message(
@@ -249,5 +280,5 @@ Now reformulate the following question such that it makes sense in isolation:\n{
         yield {
             "status": "complete",
             "message": html_message,
-            "metadata": {"sources": self.references_from_nodes(nodes)},
+            "metadata": {"sources": self.references_from_nodes(nodes, used_refs)},
         }
