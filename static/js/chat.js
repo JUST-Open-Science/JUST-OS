@@ -172,12 +172,10 @@ async function sendMessage(message) {
         }
     } catch (error) {
         console.error('Error:', error);
-        updateStatus('Error: Failed to get response');
+        if (message) {
+            console.error{"Message", message}
+        }
     }
-
-
-
-
 
 }
 
