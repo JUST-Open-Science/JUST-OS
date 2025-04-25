@@ -5,3 +5,5 @@ server_port: 7863
 
 vector_store: 'data/interim/vs_241218_bge-small-en-v1.5'
 embedding_model: 'BAAI/bge-small-en-v1.5'
+
+retriever_top_k: 7

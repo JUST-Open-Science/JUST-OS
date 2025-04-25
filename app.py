@@ -57,21 +57,17 @@ class FlaskApp:
     def create_app(self, config):
         self.config = config
 
-        # Initialize embedding model and retriever once
-        if self._embed_model is None:
-            logger.debug("Initializing components")
-            self._embed_model = HuggingFaceEmbedding(
-                model_name=config["embedding_model"]
-            )
-            persist_dir = config["vector_store"]
-            vector_store = FaissVectorStore.from_persist_dir(persist_dir)
-            storage_context = StorageContext.from_defaults(
-                vector_store=vector_store, persist_dir=persist_dir
-            )
-            index = load_index_from_storage(
-                storage_context=storage_context, embed_model=self._embed_model
-            )
-            self._retriever = index.as_retriever(similarity_top_k=5)
+        logger.debug("Initializing components")
+        self._embed_model = HuggingFaceEmbedding(model_name=config["embedding_model"])
+        persist_dir = config["vector_store"]
+        vector_store = FaissVectorStore.from_persist_dir(persist_dir)
+        storage_context = StorageContext.from_defaults(
+            vector_store=vector_store, persist_dir=persist_dir
+        )
+        index = load_index_from_storage(
+            storage_context=storage_context, embed_model=self._embed_model
+        )
+        self._retriever = index.as_retriever(similarity_top_k=config["retriever_top_k"])
 
         self.rag_service = Qualle(
             config, self.chat_manager, self._embed_model, self._retriever
