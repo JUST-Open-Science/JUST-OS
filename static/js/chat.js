@@ -82,7 +82,21 @@ function addMessage(message, sender, sources=null) {
     }
 
     chatMessages.appendChild(messageDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    // If this is a bot message, scroll the previous user message to the top
+    if (sender === 'bot') {
+        const messages = chatMessages.getElementsByClassName('message');
+        const lastUserMessage = Array.from(messages).reverse().find(msg => msg.classList.contains('user-message'));
+        if (lastUserMessage) {
+            const rect = lastUserMessage.getBoundingClientRect();
+            const absoluteTop = window.scrollY + rect.top - 20; // 20px padding from top
+            console.log('Scrolling to:', absoluteTop);
+            window.scrollTo({
+                top: absoluteTop,
+                behavior: 'smooth'
+            });
+        }
+    }
 };
 
 async function sendMessage(message) {
@@ -113,7 +127,7 @@ async function sendMessage(message) {
     messageInput.disabled = true;
     sendButton.disabled = true;
     sendButton.style.display = 'none';
-    window.scrollTo(0, document.body.scrollHeight);
+    window.scrollTo(0, document.body.scrollHeight, { behavior: 'smooth' });
 
     function endStream() {
         clearInterval(messageInterval);
