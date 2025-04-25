@@ -216,6 +216,7 @@ Return your answer as a valid JSON object with a single boolean entry "concerns_
 You should reformulate a new question by the user in such a way that it makes sense in isolation.
 As an example, if a user follows up a question about open science with a question like "Does it also have disadvantages?",
 a proper reformulation would be "Does Open Science also have disadvantages?"
+If the question is not related to open science, return the original question.
 Now reformulate the following question such that it makes sense in isolation:\n{query}"""
 
         history_openai_format = [
