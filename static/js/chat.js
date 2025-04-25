@@ -168,6 +168,9 @@ async function sendMessage(message) {
 document.addEventListener('DOMContentLoaded', function () {
     const userInput = document.getElementById('user-input');
     const sendButton = document.getElementById('send-button');
+    const infoButton = document.getElementById('info-button');
+    const modal = document.getElementById('info-modal');
+    const closeModal = document.querySelector('.close-modal');
 
     userInput.value = "How does open science reshape the future of interdisciplinary and collaborative research?";
 
@@ -188,6 +191,21 @@ document.addEventListener('DOMContentLoaded', function () {
         const message = userInput.value;
         userInput.value = '';
         sendMessage(message);
+    });
+
+    // Modal functionality
+    infoButton.addEventListener('click', function() {
+        modal.style.display = 'block';
+    });
+
+    closeModal.addEventListener('click', function() {
+        modal.style.display = 'none';
+    });
+
+    window.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
     });
 });
 
