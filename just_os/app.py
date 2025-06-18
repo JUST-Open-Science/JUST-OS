@@ -8,16 +8,17 @@ from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.vector_stores.faiss import FaissVectorStore
 from redis import Redis
 
-from chat_manager import ChatManager
-from qualle import Qualle
+from just_os.chat_manager import ChatManager
+from just_os.extensions import flask_static_digest
+from just_os.qualle import Qualle
 
 logger = logging.getLogger(__name__)
 
 
 class FlaskApp:
     def __init__(self):
-        self.app = Flask(__name__)
-        self.chat_manager = ChatManager(Redis(host="localhost", port=6379, db=0))
+        self.app = Flask(__name__, static_folder="../static", static_url_path="")
+        self.chat_manager = ChatManager(Redis(host="redis", port=6379, db=0))
         self._embed_model = None
         self._retriever = None
         self.setup_routes()
@@ -72,6 +73,9 @@ class FlaskApp:
         self.rag_service = Qualle(
             config, self.chat_manager, self._embed_model, self._retriever
         )
+
+        flask_static_digest.init_app(self.app)
+
         return self.app
 
 
