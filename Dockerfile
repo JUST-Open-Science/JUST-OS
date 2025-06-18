@@ -1,4 +1,4 @@
-FROM python:3.13-slim-bookworm AS app-build
+FROM python:3.12.11-slim-bookworm AS app-build
 
 WORKDIR /app
 
@@ -33,7 +33,7 @@ CMD ["bash"]
 
 ###############################################################################
 
-FROM python:3.13-slim-bookworm AS app
+FROM python:3.12.11-slim-bookworm AS app
 
 WORKDIR /app
 
