@@ -6,10 +6,13 @@ import re
 
 import markdown
 from bs4 import BeautifulSoup
+from dotenv import load_dotenv
 from openai import OpenAI
 
 from chat_manager import ChatManager
 from openscholar import generation_instance_prompts_w_references, system_prompt
+
+load_dotenv()
 
 logging.basicConfig(
     # level=logging.DEBUG,
