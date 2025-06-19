@@ -1,26 +1,23 @@
 import json
 import logging
+import os
 
 import yaml
 from flask import Flask, Response, render_template, request
-from llama_index.core import StorageContext, load_index_from_storage
-from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-from llama_index.vector_stores.faiss import FaissVectorStore
 from redis import Redis
 
 from just_os.chat_manager import ChatManager
 from just_os.extensions import flask_static_digest
-from just_os.qualle import Qualle
 
 logger = logging.getLogger(__name__)
 
 
 class FlaskApp:
     def __init__(self):
-        self.app = Flask(__name__, static_folder="../static", static_url_path="")
+        self.app = Flask(__name__, static_folder="../public", static_url_path="")
         self.chat_manager = ChatManager(Redis(host="redis", port=6379, db=0))
-        self._embed_model = None
-        self._retriever = None
+        self.config = None
+        self._rag_service = None
         self.setup_routes()
 
     def setup_routes(self):
@@ -35,14 +32,24 @@ class FlaskApp:
 
             def generate():
                 try:
-                    for response in self.rag_service.get_response(
-                        user_message, chat_id
-                    ):
-                        yield json.dumps(response) + "\n"
+                    # Lazy-load RAG service only when needed
+                    rag_service = self.get_rag_service()
+                    if rag_service:
+                        for response in rag_service.get_response(user_message, chat_id):
+                            yield json.dumps(response) + "\n"
+                    else:
+                        yield (
+                            json.dumps(
+                                {
+                                    "status": "error",
+                                    "message": "RAG service is not available in this environment.",
+                                }
+                            )
+                            + "\n"
+                        )
 
                 except Exception as e:
                     print(f"Error: {str(e)}")
-                    print(response)
                     yield (
                         json.dumps(
                             {
@@ -55,27 +62,25 @@ class FlaskApp:
 
             return Response(generate(), mimetype="text/event-stream")
 
+    def get_rag_service(self):
+        """Lazy-load the RAG service only when needed"""
+        if self._rag_service is None and self.config is not None:
+            try:
+                from just_os.rag_service import create_rag_service
+
+                self._rag_service = create_rag_service(
+                    self.config, self.chat_manager
+                )
+                logger.debug("RAG service initialized")
+            except Exception as e:
+                logger.error(f"Failed to initialize RAG service: {str(e)}")
+                return None
+
+        return self._rag_service
+
     def create_app(self, config):
         self.config = config
-
-        logger.debug("Initializing components")
-        self._embed_model = HuggingFaceEmbedding(model_name=config["embedding_model"])
-        persist_dir = config["vector_store"]
-        vector_store = FaissVectorStore.from_persist_dir(persist_dir)
-        storage_context = StorageContext.from_defaults(
-            vector_store=vector_store, persist_dir=persist_dir
-        )
-        index = load_index_from_storage(
-            storage_context=storage_context, embed_model=self._embed_model
-        )
-        self._retriever = index.as_retriever(similarity_top_k=config["retriever_top_k"])
-
-        self.rag_service = Qualle(
-            config, self.chat_manager, self._embed_model, self._retriever
-        )
-
         flask_static_digest.init_app(self.app)
-
         return self.app
 
 
@@ -84,7 +89,10 @@ def load_config():
         return yaml.safe_load(config_file)
 
 
+# Load configuration
 config = load_config()
+
+# Create and configure the Flask app
 flask_app = FlaskApp()
 app = flask_app.create_app(config)
 

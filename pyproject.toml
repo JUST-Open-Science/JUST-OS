@@ -8,14 +8,14 @@ dependencies = [
     "faiss-cpu==1.11.0",
     "flask-static-digest==0.4.1",
     "flask==3.1.1",
-    "llama-index==0.12.42",
+    "gunicorn==23.0.0",
     "llama-index-embeddings-huggingface==0.5.4",
     "llama-index-vector-stores-faiss==0.4.0",
+    "llama-index==0.12.42",
     "markdown==3.8",
     "pyyaml==6.0.2",
     "redis==6.2.0",
     "torch==2.7.1",
-    "gunicorn==23.0.0",
 ]
 
 [tool.uv.sources]

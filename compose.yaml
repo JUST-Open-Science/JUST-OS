@@ -10,6 +10,8 @@ x-app: &default-app
     redis:
       condition: "service_started"
       required: false
+  environment:
+    OMP_NUM_THREADS: 1
   env_file:
     - ".env"
   restart: "${DOCKER_RESTART_POLICY:-unless-stopped}"
