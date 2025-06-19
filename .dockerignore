@@ -12,3 +12,6 @@ data/
 !.env.example
 celerybeat-schedule
 docker-compose.override.yml
+
+.venv
+**/__pycache__
