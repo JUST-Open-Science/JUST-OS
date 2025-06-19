@@ -9,8 +9,8 @@ from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from openai import OpenAI
 
-from chat_manager import ChatManager
-from openscholar import generation_instance_prompts_w_references, system_prompt
+from just_os.chat_manager import ChatManager
+from just_os.openscholar import generation_instance_prompts_w_references, system_prompt
 
 load_dotenv()
 
