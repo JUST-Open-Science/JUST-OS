@@ -4,7 +4,7 @@
 ### App #######################################################################
 
 public/*
-!public/.keep
+!public/.gitkeep
 
 .env*
 !.env.example
@@ -214,3 +214,6 @@ flycheck_*.el
 
 # network security
 /network-security.data
+
+data/pdfs/*
+!data/pdfs/.gitkeep

@@ -639,6 +639,13 @@ dependencies = [
     { name = "torch" },
 ]
 
+[package.dev-dependencies]
+ingest = [
+    { name = "pandas" },
+    { name = "python-dotenv" },
+    { name = "tqdm" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "faiss-cpu", specifier = "==1.11.0" },
@@ -652,6 +659,13 @@ requires-dist = [
     { name = "pyyaml", specifier = "==6.0.2" },
     { name = "redis", specifier = "==6.2.0" },
     { name = "torch", specifier = "==2.7.1", index = "https://download.pytorch.org/whl/cpu" },
+]
+
+[package.metadata.requires-dev]
+ingest = [
+    { name = "pandas", specifier = "==2.2.3" },
+    { name = "python-dotenv", specifier = "==1.1.0" },
+    { name = "tqdm", specifier = ">=4.67.1" },
 ]
 
 [[package]]
