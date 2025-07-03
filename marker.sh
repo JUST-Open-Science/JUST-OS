@@ -1,3 +1,4 @@
+# Remove .gitkeep files to avoid markers trying to analyze them
 rm -f data/pdfs/by-doi/.gitkeep
 rm -f data/processed/markdown/.gitkeep
 

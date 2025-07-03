@@ -16,6 +16,7 @@ dependencies = [
     "pyyaml==6.0.2",
     "redis==6.2.0",
     "torch==2.7.1",
+    "multidict==6.6.3",
 ]
 
 [tool.uv.sources]
@@ -37,7 +38,7 @@ explicit = true
 ingest = [
     "marker-pdf==1.8.0",
     "pandas==2.2.3",
-    "psutil>=7.0.0",
+    "psutil==7.0.0",
     "python-dotenv==1.1.0",
-    "tqdm>=4.67.1",
+    "tqdm==4.67.1",
 ]

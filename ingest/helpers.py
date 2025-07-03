@@ -148,7 +148,7 @@ def wrangle_data(df: pd.DataFrame) -> pd.DataFrame:
         inplace=True,
     )
 
-    selected_columns = ["title"] + list(rename_dict.values())
+    selected_columns = ["title", "timestamp"] + list(rename_dict.values())
 
     df.fillna("", inplace=True)
     return df[selected_columns]
