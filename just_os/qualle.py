@@ -24,12 +24,10 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-CREATOR_KEY = "Provider/Creators"
-TIMESTAMP_KEY = "Timestamp"
-TITLE_KEY = "Title"
-URL_DOI_KEY = (
-    "URL/DOI (please check DOI by collating DOI at the end of https://doi.org/ )"
-)
+CREATOR_KEY = "creators"
+TIMESTAMP_KEY = "timestamp"
+TITLE_KEY = "title"
+URL_DOI_KEY = "link_to_resource"
 
 NON_OS_RESPONSE = "Sorry, I'm only able to answer questions related to Open Science."
 

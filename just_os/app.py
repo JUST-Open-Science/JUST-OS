@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 
 import yaml
 from flask import Flask, Response, render_template, request
