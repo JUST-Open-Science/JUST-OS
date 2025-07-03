@@ -12,7 +12,7 @@ This repository contains the source code for the [JUST-OS](https://just-open-sci
 git clone https://github.com/just-open-science/JUST-OS.git
 cd JUST-OS
 ```
-3. Download the vector store from [here](https://drive.google.com/file/d/1kgAvRN3OQ0UjkFmBXXtJcHIiFbcslJIl/view?usp=drive_link) and extract it to `data/interim`.
+3. Download the vector store from [here](https://drive.google.com/file/d/1jhdPrBT-ruhf2aeHG45eEbrVFFMDYxhA/view?usp=sharing) and extract it to `data/processed`.
 
 4. Create an `.env` file with your UG-LLM api key like
 ```
