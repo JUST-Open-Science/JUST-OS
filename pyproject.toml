@@ -20,7 +20,7 @@ dependencies = [
 
 [tool.uv.sources]
 torch = [
-    { index = "pytorch-cpu" },
+    { index = "pytorch-gpu" },
 ]
 
 [[tool.uv.index]]
@@ -28,10 +28,16 @@ name = "pytorch-cpu"
 url = " https://download.pytorch.org/whl/cpu"
 explicit = true
 
+[[tool.uv.index]]
+name = "pytorch-gpu"
+url = " https://download.pytorch.org/whl/cu118"
+explicit = true
+
 [dependency-groups]
 ingest = [
-    "marker-pdf>=1.8.0",
+    "marker-pdf==1.8.0",
     "pandas==2.2.3",
+    "psutil>=7.0.0",
     "python-dotenv==1.1.0",
     "tqdm>=4.67.1",
 ]

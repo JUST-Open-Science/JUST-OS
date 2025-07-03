@@ -220,3 +220,6 @@ data/pdfs/by-justos-id/*
 !data/pdfs/by-doi/.gitkeep
 !data/pdfs/by-justos-id/.gitkeep
 
+data/processed/markdown/*
+!data/processed/markdown/.gitkeep
+
