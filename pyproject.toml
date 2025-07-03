@@ -30,6 +30,7 @@ explicit = true
 
 [dependency-groups]
 ingest = [
+    "marker-pdf>=1.8.0",
     "pandas==2.2.3",
     "python-dotenv==1.1.0",
     "tqdm>=4.67.1",

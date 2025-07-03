@@ -215,5 +215,8 @@ flycheck_*.el
 # network security
 /network-security.data
 
-data/pdfs/*
-!data/pdfs/.gitkeep
+data/pdfs/by-doi/*
+data/pdfs/by-justos-id/*
+!data/pdfs/by-doi/.gitkeep
+!data/pdfs/by-justos-id/.gitkeep
+
