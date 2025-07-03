@@ -23,3 +23,22 @@ RUGLLM_API_KEY=<your key>
 ```bash
 uv run app.py
 ```
+
+## Ingestion Pipeline
+
+The ingestion process creates a vector store in the `data` folder that the backend will use. Follow these steps in order:
+
+1. **Filter resources on Open Access status as assessed by Unpaywall**:
+   ```bash
+   uv run bootstrap_local_database.py
+   ```
+
+2. **Convert PDFs to Markdown**:
+   ```bash
+   ./marker.sh
+   ```
+
+3. **Generate embeddings**:
+   ```bash
+   uv run embed.py
+   ```
