@@ -41,9 +41,12 @@ class Qualle:
         self._embed_model = embed_model
         self._retriever = retriever
 
+        self.general_model = config["GENERAL_MODEL"]
+        self.citation_model = config["CITATION_MODEL"]
+
         # Initialize OpenAI client
         self.client = OpenAI(
-            api_key=os.getenv("RUGLLM_API_KEY"), base_url=self.config["base_url"]
+            api_key=os.getenv("RUGLLM_API_KEY"), base_url=config["BASE_URL"]
         )
 
     def _init_client(self):
@@ -195,7 +198,7 @@ Return your answer as a valid JSON object with a single boolean entry "concerns_
         tool_choice = {"type": "function", "function": {"name": "structure_output"}}
 
         response = self.client.chat.completions.create(
-            model=self.config["general_model"],
+            model=self.general_model,
             messages=history_openai_format,
             temperature=self.config.get("temperature_general", 0.3),
             tools=tools,
@@ -246,7 +249,7 @@ Now reformulate the following question such that it makes sense in isolation:\n{
         tool_choice = {"type": "function", "function": {"name": "structure_output"}}
 
         response = self.client.chat.completions.create(
-            model=self.config["general_model"],
+            model=self.general_model,
             messages=history_openai_format,
             temperature=self.config.get("temperature_general", 0.3),
             tools=tools,
@@ -285,7 +288,7 @@ Now reformulate the following question such that it makes sense in isolation:\n{
             yield {"status": "in-progress", "message": "Generating response"}
 
             response = self.client.chat.completions.create(
-                model=self.config["citation_model"],
+                model=self.citation_model,
                 messages=history_openai_format,
                 temperature=self.config.get("temperature", 0.3),
             )
