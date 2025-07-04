@@ -15,7 +15,6 @@ class FlaskApp:
     def __init__(self):
         self.app = Flask(__name__, static_folder="../public", static_url_path="")
         self.chat_manager = ChatManager(Redis(host="redis", port=6379, db=0))
-        self.config = None
         self._rag_service = None
         self.setup_routes()
 
@@ -63,12 +62,12 @@ class FlaskApp:
 
     def get_rag_service(self):
         """Lazy-load the RAG service only when needed"""
-        if self._rag_service is None and self.config is not None:
+        if self._rag_service is None and self.app.config is not None:
             try:
                 from just_os.rag_service import create_rag_service
 
                 self._rag_service = create_rag_service(
-                    self.config, self.chat_manager
+                    self.app.config, self.chat_manager
                 )
                 logger.debug("RAG service initialized")
             except Exception as e:
@@ -77,24 +76,11 @@ class FlaskApp:
 
         return self._rag_service
 
-    def create_app(self, config):
-        self.config = config
+    def create_app(self):
+        self.app.config.from_object("config.settings")
         flask_static_digest.init_app(self.app)
         return self.app
 
 
-def load_config():
-    with open("config.yaml", "r") as config_file:
-        return yaml.safe_load(config_file)
-
-
-# Load configuration
-config = load_config()
-
-# Create and configure the Flask app
 flask_app = FlaskApp()
-app = flask_app.create_app(config)
-
-
-if __name__ == "__main__":
-    app.run(debug=True, port=config["server_port"])
+app = flask_app.create_app()
