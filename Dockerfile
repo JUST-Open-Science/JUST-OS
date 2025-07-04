@@ -100,7 +100,6 @@ COPY --chown=python:python --from=app-build /home/python/.local /home/python/.lo
 COPY --from=app-build /usr/local/bin/uv /usr/local/bin/uvx /usr/local/bin/
 COPY --chown=python:python --from=app-build /app/bin bin
 COPY --chown=python:python just_os just_os
-COPY --chown=python:python config.yaml config.yaml
 COPY --chown=python:python config config
 
 RUN if [ "${FLASK_DEBUG}" != "true" ]; then \
