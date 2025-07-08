@@ -234,8 +234,7 @@ class DocumentRetriever:
         """
         try:
             return "\n".join(
-                f"[{idx}] Title: {self.node_to_text(node)} "
-                for idx, node in enumerate(nodes)
+                f"[{idx}] {self.node_to_text(node)} " for idx, node in enumerate(nodes)
             )
         except Exception as e:
             logger.error(f"Error formatting context: {str(e)}")
