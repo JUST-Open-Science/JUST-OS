@@ -3,3 +3,5 @@ services:
     volumes:
       - "./just_os:/app/just_os"
       - "./config:/app/config"
+    ports:
+      - "${DOCKER_WEB_PORT_FORWARD:-127.0.0.1:8000}:${PORT:-8000}"
