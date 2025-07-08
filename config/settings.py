@@ -14,7 +14,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "RERANK_MODEL": "bge-reranker-large",
     # Temperature settings
     "TEMPERATURE": 0.3,
-    "TEMPERATURE_GENERAL": 0.3,
+    "TEMPERATURE_GENERAL": 0.15,
     # Vector store settings
     "VECTOR_STORE": "data/processed/vs_250703_bge-small-en-v1.5",
     "RETRIEVER_TOP_K": 20,
