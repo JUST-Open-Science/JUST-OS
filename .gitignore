@@ -223,3 +223,5 @@ data/pdfs/by-justos-id/*
 data/processed/markdown/*
 !data/processed/markdown/.gitkeep
 
+
+compose.override.yaml
