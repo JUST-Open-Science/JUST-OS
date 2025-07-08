@@ -112,4 +112,4 @@ ENTRYPOINT ["/app/bin/docker-entrypoint-web"]
 
 EXPOSE 8000
 
-CMD ["gunicorn", "-c", "python:config.gunicorn", "just_os.app:app"]
+CMD ["gunicorn", "-c", "python:config.gunicorn", "just_os.app:get_app()"]
