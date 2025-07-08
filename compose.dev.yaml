@@ -1,0 +1,5 @@
+services:
+  web:
+    volumes:
+      - "./just_os:/app/just_os"
+      - "./config:/app/config"
