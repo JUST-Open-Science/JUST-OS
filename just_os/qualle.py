@@ -681,10 +681,6 @@ class Qualle:
 
         logger.debug("Qualle service initialized")
 
-    # Query processing methods have been moved to QueryProcessor class
-    # Document retrieval methods have been moved to DocumentRetriever class
-    # Response generation methods have been moved to ResponseGenerator class
-
     def no_relevant_nodes_handler(
         self, query: str, chat_id: str
     ) -> Generator[Dict[str, Any], None, None]:
