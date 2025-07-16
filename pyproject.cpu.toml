@@ -1,0 +1,43 @@
+[project]
+name = "just-os"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "faiss-cpu>=1.11.0",
+    "flask-static-digest>=0.4.1",
+    "flask-limiter>=3.5.0",
+    "flask>=3.1.1",
+    "gunicorn>=23.0.0",
+    "llama-index-embeddings-huggingface>=0.5.4",
+    "llama-index-vector-stores-faiss>=0.4.0",
+    "llama-index>=0.12.42",
+    "markdown>=3.8",
+    "pyyaml>=6.0.2",
+    "redis>=6.2.0",
+    "multidict>=6.6.3",
+    "torch>=2.7.1"
+]
+
+[tool.setuptools]
+packages = ["just_os", "ingest"]
+
+[dependency-groups]
+ingest = [
+    "marker-pdf>=1.8.0",
+    "pandas>=2.2.3",
+    "psutil>=7.0.0",
+    "python-dotenv>=1.1.0",
+    "tqdm>=4.67.1",
+]
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cpu"},
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = " https://download.pytorch.org/whl/cpu"
+explicit = true
