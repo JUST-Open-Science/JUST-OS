@@ -17,7 +17,7 @@ dependencies = [
     "pyyaml>=6.0.2",
     "redis>=6.2.0",
     "multidict>=6.6.3",
-    "torch>=2.7.1"
+    "torch>=2.7.1",
 ]
 
 [tool.setuptools]
@@ -39,5 +39,5 @@ torch = [
 
 [[tool.uv.index]]
 name = "pytorch-gpu"
-url = " https://download.pytorch.org/whl/gpu"
+url = "https://download.pytorch.org/whl/cu118"
 explicit = true
