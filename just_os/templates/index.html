@@ -16,6 +16,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    
+    <style>
+        body {
+            background-color: {{ bg_color|safe }};
+        }
+    </style>
 </head>
 <div id="header-bar">
     <img src='/images/qualle.png' id="header-logo">
