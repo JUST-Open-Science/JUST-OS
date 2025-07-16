@@ -50,6 +50,8 @@ services:
     stop_grace_period: "3s"
     volumes:
       - "redis:/data"
+    networks:
+      - default
 
   web:
     <<: *default-app
@@ -68,6 +70,8 @@ services:
       - "${DOCKER_WEB_PORT_FORWARD:-127.0.0.1:8000}:${PORT:-8000}"
     volumes:
       - "./data:/app/data:ro"
+    networks:
+      - default
   js:
     <<: *default-assets
     command: "../run yarn:build:js"
@@ -78,3 +82,7 @@ services:
 
 volumes:
   redis: {}
+
+networks:
+  default:
+    driver: bridge

@@ -1,0 +1,9 @@
+services:
+  web:
+    container_name: just-os-container
+    networks:
+      - proxy-network
+
+networks:
+  proxy-network:
+    external: true
