@@ -52,7 +52,7 @@ COPY --from=ghcr.io/astral-sh/uv:0.6.9 /uv /uvx /usr/local/bin/
 
 USER python
 
-COPY --chown=python:python pyproject.toml uv.lock* ./
+COPY --chown=python:python pyproject.cpu.toml  ./pyproject.toml
 COPY --chown=python:python bin/ ./bin
 
 ENV PYTHONUNBUFFERED="true" \
