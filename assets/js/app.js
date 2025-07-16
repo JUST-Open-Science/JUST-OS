@@ -138,7 +138,7 @@ async function sendMessage(message) {
 
   messageInput.disabled = true;
   sendButton.disabled = true;
-  sendButton.style.display = "none";
+  //  sendButton.style.display = "none";
   window.scrollTo(0, document.body.scrollHeight, { behavior: "smooth" });
 
   function endStream() {
@@ -154,7 +154,7 @@ async function sendMessage(message) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ message: message, chat_id: chatId }),
+      body: JSON.stringify({ message: message, chat_id: window.chatId }),
     });
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
@@ -215,9 +215,12 @@ async function sendMessage(message) {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
+  // Add CSS for new elements
+  const style = document.createElement('style');
   const userInput = document.getElementById("user-input");
   const sendButton = document.getElementById("send-button");
   const infoButton = document.getElementById("info-button");
+  const newChatButton = document.getElementById("new-chat-button");
   const modal = document.getElementById("info-modal");
   const closeModal = document.querySelector(".close-modal");
 
@@ -257,13 +260,28 @@ document.addEventListener("DOMContentLoaded", function () {
       modal.style.display = "none";
     }
   });
+  
+  // New chat button functionality
+  newChatButton.addEventListener("click", function() {
+    // Clear chat messages
+    const chatMessages = document.getElementById("chat-messages");
+    chatMessages.innerHTML = "";
+    
+    // Generate a new chat ID
+    window.chatId = crypto.randomUUID();
+    
+    // Reset the input field with the default question
+    userInput.value = "How does open science reshape the future of interdisciplinary and collaborative research?";
+    
+  });
 });
 
 function requestBody(message) {
   return JSON.stringify({
     message: message,
-    chatId: chatId,
+    chatId: window.chatId,
   });
 }
 
-const chatId = crypto.randomUUID();
+// Initialize chatId as a global variable
+window.chatId = crypto.randomUUID();

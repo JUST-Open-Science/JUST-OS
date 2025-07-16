@@ -51,7 +51,10 @@ services:
     volumes:
       - "redis:/data"
     networks:
-      - default
+      default:
+        aliases:
+          - redis
+      
 
   web:
     <<: *default-app

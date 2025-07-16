@@ -20,7 +20,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "RETRIEVER_TOP_K": 20,
     # RANKING SETTINGS
     "MIN_RELEVANCE": 0.1,
-    "MAX_CHUNKS": 5,
+    "MAX_CHUNKS": 7,
     # Redis settings
     "REDIS_HOST": "redis",
     "REDIS_PORT": 6379,
