@@ -154,7 +154,20 @@ class FlaskApp:
         @self.app.route("/")
         def home():
             """Home page route."""
-            return render_template("index.html")
+            # Get background color from URL parameter, default to #fefdf6 if not provided
+            bg_color = request.args.get("bg_color", "#fefdf6")
+
+            # Validate the background color (simple validation for hex colors and named colors)
+            import re
+
+            if bg_color.startswith("#"):
+                # Validate hex color format (#RGB, #RRGGBB, #RRGGBBAA)
+                if not re.match(
+                    r"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$", bg_color
+                ):
+                    bg_color = "#fefdf6"  # Default if invalid
+
+            return render_template("index.html", bg_color=bg_color)
 
         @self.app.route("/chat", methods=["POST"])
         @self.rate_limit_manager.limiter.limit(
