@@ -2,8 +2,6 @@ from config import settings as justos_settings
 
 from pathlib import Path
 
-import re
-
 import faiss
 import pandas as pd
 from llama_index.core import Document, StorageContext, VectorStoreIndex
@@ -13,13 +11,6 @@ from llama_index.vector_stores.faiss import FaissVectorStore
 from llama_index.core import Settings
 
 from datetime import datetime
-
-REFERENCE_PATTERN = re.compile(r"\[(\d+)\]")
-
-
-def cleanup_markdown(text):
-    return REFERENCE_PATTERN.sub("", text)
-
 
 if __name__ == "__main__":
     Settings.chunk_size = justos_settings.CHUNK_SIZE
@@ -35,7 +26,7 @@ if __name__ == "__main__":
 
     documents = [
         Document(
-            text=cleanup_markdown(mdf.read_text(encoding="utf-8")),
+            text=mdf.read_text(encoding="utf-8"),
             metadata=metadata.loc[mdf.stem].to_dict(),
             text_template="{content}",
             excluded_llm_metadata_keys=excluded_metadata_keys,
@@ -59,3 +50,4 @@ if __name__ == "__main__":
     index.storage_context.persist(
         f"data/processed/vs_{datetime.now().strftime('%y%m%d')}_{justos_settings.EMBEDDING_MODEL.split('/')[-1]}"
     )
+
