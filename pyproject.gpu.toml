@@ -16,24 +16,12 @@ dependencies = [
     "markdown>=3.8",
     "pyyaml>=6.0.2",
     "redis>=6.2.0",
-    "torch>=2.7.1",
     "multidict>=6.6.3",
+    "torch>=2.7.1",
 ]
 
-[tool.uv.sources]
-torch = [
-    { index = "pytorch-cpu" },
-]
-
-[[tool.uv.index]]
-name = "pytorch-cpu"
-url = " https://download.pytorch.org/whl/cpu"
-explicit = true
-
-[[tool.uv.index]]
-name = "pytorch-gpu"
-url = " https://download.pytorch.org/whl/cu118"
-explicit = true
+[tool.setuptools]
+packages = ["just_os", "ingest"]
 
 [dependency-groups]
 ingest = [
@@ -43,3 +31,13 @@ ingest = [
     "python-dotenv>=1.1.0",
     "tqdm>=4.67.1",
 ]
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-gpu"},
+]
+
+[[tool.uv.index]]
+name = "pytorch-gpu"
+url = "https://download.pytorch.org/whl/cu118"
+explicit = true
