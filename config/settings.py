@@ -31,6 +31,9 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "RATE_LIMIT_DAY": 200,  # Number of requests allowed per day per user/IP
     # Chat settings
     "MESSAGE_TTL": 3600,  # 1 hour in seconds
+    # Google Drive settings
+    "CREDENTIALS_FILE": "credentials.json",
+    "GDRIVE_FOLDER_ID": "1EqOxpkb-ksYjRmvSHl1XjULlcPxZINdD",
 }
 
 # Override defaults with environment variables

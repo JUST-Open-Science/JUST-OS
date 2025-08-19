@@ -225,3 +225,6 @@ data/processed/markdown/*
 
 compose.override.yaml
 pyproject.toml
+
+credentials.json
+token.json
