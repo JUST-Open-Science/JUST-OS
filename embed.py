@@ -10,6 +10,11 @@ from llama_index.vector_stores.faiss import FaissVectorStore
 
 from config import settings as justos_settings
 
+from ingest.drive import authenticate, upload_folder
+
+from config.settings import CREDENTIALS_FILE, GDRIVE_FOLDER_ID
+
+
 REFERENCE_PATTERN = re.compile(r"\[(\d+)\]")
 
 
@@ -54,6 +59,17 @@ if __name__ == "__main__":
         f"data/processed/vs_{datetime.now().strftime('%y%m%d')}_{justos_settings.EMBEDDING_MODEL.split('/')[-1]}"
     )
 
-    index.storage_context.persist(
+    output_path = (
         f"data/processed/vs_latest_{justos_settings.EMBEDDING_MODEL.split('/')[-1]}"
+    )
+
+    index.storage_context.persist(output_path)
+
+    creds = authenticate(CREDENTIALS_FILE)
+
+    upload_folder(
+        output_path,
+        GDRIVE_FOLDER_ID,
+        creds,
+        exists_ok=True,
     )
