@@ -34,6 +34,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     # Google Drive settings
     "CREDENTIALS_FILE": "credentials.json",
     "GDRIVE_FOLDER_ID": "1EqOxpkb-ksYjRmvSHl1XjULlcPxZINdD",
+    "URL_JUST_OS_DB": "https://drive.google.com/uc?id=1eMiimpcwcnVJT6k4PQ9xfz3Udvsejo6V",
 }
 
 # Override defaults with environment variables
