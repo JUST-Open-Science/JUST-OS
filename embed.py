@@ -65,7 +65,9 @@ if __name__ == "__main__":
 
     index.storage_context.persist(output_path)
 
-    creds = authenticate(CREDENTIALS_FILE)
+    creds = authenticate(
+        CREDENTIALS_FILE, justos_settings.GDRIVE_AUTENTICATION_SERVER_PORT
+    )
 
     upload_folder(
         output_path,

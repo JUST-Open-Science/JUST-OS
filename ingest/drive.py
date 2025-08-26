@@ -9,7 +9,7 @@ import json
 SCOPES = ["https://www.googleapis.com/auth/drive"]
 
 
-def authenticate(credentials_path):
+def authenticate(credentials_path, local_server_port=0):
     """Authenticate with Google Drive API."""
     creds = None
     # The file token.json stores the user's access and refresh tokens
@@ -21,7 +21,7 @@ def authenticate(credentials_path):
     # If credentials don't exist or are invalid, run the OAuth flow
     if not creds or not creds.valid:
         flow = InstalledAppFlow.from_client_secrets_file(credentials_path, SCOPES)
-        creds = flow.run_local_server(port=0)
+        creds = flow.run_local_server(port=local_server_port, open_browser=False)
         # Save the credentials for the next run
         with open("token.json", "w") as token:
             token.write(creds.to_json())

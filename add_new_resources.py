@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from config.settings import CREDENTIALS_FILE, GDRIVE_FOLDER_ID
+from config.settings import CREDENTIALS_FILE, GDRIVE_FOLDER_ID, URL_JUST_OS_DB
 from ingest.drive import authenticate, upload_file
 from ingest.helpers import (
     URL_FORRT,
@@ -15,8 +15,6 @@ from ingest.helpers import (
     get_unpaywall_info_by_title,
     wrangle_data_forrt,
 )
-
-URL_JUST_OS_DB = "https://drive.google.com/uc?id=1eMiimpcwcnVJT6k4PQ9xfz3Udvsejo6V"
 
 if __name__ == "__main__":
     df_forrt = pd.read_csv(URL_FORRT)

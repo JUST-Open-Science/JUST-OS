@@ -11,7 +11,6 @@ from werkzeug.exceptions import TooManyRequests
 
 from config.settings import get_config
 from just_os.chat_manager import ChatManager
-from just_os.database import get_redis_client
 from just_os.extensions import flask_static_digest
 
 logger = logging.getLogger(__name__)

@@ -14,13 +14,14 @@ logger = logging.getLogger(__name__)
 # Singleton instance for the RAG service
 _rag_service_instance: Optional[Qualle] = None
 
+
 def create_embedding_model(config: Dict[str, Any]):
     """
     Create and initialize the embedding model.
-    
+
     Args:
         config: Configuration dictionary
-        
+
     Returns:
         The initialized embedding model
     """
@@ -30,14 +31,15 @@ def create_embedding_model(config: Dict[str, Any]):
         logger.error(f"Failed to initialize embedding model: {str(e)}")
         raise
 
+
 def create_retriever(config: Dict[str, Any], embed_model):
     """
     Create and initialize the retriever component.
-    
+
     Args:
         config: Configuration dictionary
         embed_model: The embedding model to use
-        
+
     Returns:
         The initialized retriever
     """
@@ -57,8 +59,10 @@ def create_retriever(config: Dict[str, Any], embed_model):
         logger.error(f"Failed to initialize retriever: {str(e)}")
         raise
 
-def create_rag_service(config: Optional[Dict[str, Any]] = None,
-                      chat_manager: Optional[ChatManager] = None) -> Qualle:
+
+def create_rag_service(
+    config: Optional[Dict[str, Any]] = None, chat_manager: Optional[ChatManager] = None
+) -> Qualle:
     """
     Create a RAG service (Qualle) instance with the necessary components.
     Uses a singleton pattern to avoid creating multiple instances.
@@ -71,32 +75,32 @@ def create_rag_service(config: Optional[Dict[str, Any]] = None,
         Qualle: The initialized RAG service instance
     """
     global _rag_service_instance
-    
+
     # Return existing instance if available
     if _rag_service_instance is not None:
         return _rag_service_instance
-    
+
     logger.debug("Initializing RAG components")
-    
+
     # Use default config if not provided
     if config is None:
         config = get_config()
-    
+
     # Create chat manager if not provided
     if chat_manager is None:
         chat_manager = ChatManager()
-    
+
     try:
         # Initialize embedding model
         embed_model = create_embedding_model(config)
-        
+
         # Initialize retriever
         retriever = create_retriever(config, embed_model)
-        
+
         # Create and store the Qualle instance
         _rag_service_instance = Qualle(config, chat_manager, embed_model, retriever)
         logger.debug("Created new Qualle instance")
-        
+
         return _rag_service_instance
     except Exception as e:
         logger.error(f"Failed to create RAG service: {str(e)}")
