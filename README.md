@@ -35,6 +35,6 @@ The ingestion process creates a vector store in the `data` folder that the backe
 ## Acknowledgements
 The development of the application benefitted greatly from the following open source software and public resources:
 - Allen Institue for AI's [OpenScholar model](https://huggingface.co/OpenSciLM/Llama-3.1_OpenScholar-8B) and [associated software](https://github.com/AkariAsai/OpenScholar)
-- Sebastian Mathot's [Sigmund repository](https://github.com/open-cogsci/sigmund-ai)
+- Sebastian Mathot's [Sigmund repository](https://github.com/open-cogsci/sigmund-ai) (The front-end portion of JUST-OS was developed with substantial reference to Sigmund and is hence shared under GPL3)
 - The [Unpaywall API](https://unpaywall.org/products/api)
 - [This](https://github.com/nickjj/docker-flask-example) example Docker + Flask web app
