@@ -1,7 +1,9 @@
 import hashlib
 import json
-import shutil
 from pathlib import Path
+from ingest.drive import authenticate, upload_file
+
+from config.settings import CREDENTIALS_FILE, GDRIVE_FOLDER_ID
 
 import pandas as pd
 
@@ -10,12 +12,12 @@ from ingest.helpers import (
     get_doi_from_url,
     get_unpaywall_info_by_doi,
     get_unpaywall_info_by_title,
-    wrangle_data,
+    wrangle_data_justos,
 )
 
 if __name__ == "__main__":
     df = pd.read_csv("data/raw/forrt_db_250627.csv")
-    df = wrangle_data(df)
+    df = wrangle_data_justos(df)
 
     df["doi"] = df["link_to_resource"].apply(get_doi_from_url).str.lower().str.strip()
 
@@ -64,9 +66,24 @@ if __name__ == "__main__":
         target_filename = f"{doi_hash}.pdf"
         target_path = pdf_output_dir / target_filename
 
-        # Copy file if source exists
         target_path.write_bytes(source_path.read_bytes())
 
     df.query("is_oa == True").drop(
         ["just_os_id", "is_downloaded", "pdf_exists", "is_oa"], axis=1
     ).to_csv("data/processed/just-os_db.csv", index=False)
+
+    creds = authenticate(CREDENTIALS_FILE)
+    upload_file(
+        "data/processed/just-os_db.csv",
+        GDRIVE_FOLDER_ID,
+        creds,
+        exists_ok=True,
+        remote_filename="just-os_db_init.csv",
+    )
+    upload_file(
+        "data/processed/just-os_db.csv",
+        GDRIVE_FOLDER_ID,
+        creds,
+        exists_ok=False,
+        remote_filename="just-os_db_latest.csv",
+    )

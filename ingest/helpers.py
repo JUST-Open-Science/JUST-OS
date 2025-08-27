@@ -94,11 +94,13 @@ def download_and_save_pdf(pdf_url: str, doi: str, output_dir: Path) -> str:
     Returns:
         The filename of the saved PDF
     """
-    pdf_bytes = load_url(pdf_url)
     hash_filename = f"{hashlib.md5(doi.encode()).hexdigest()}.pdf"
 
-    with output_dir.joinpath(hash_filename).open("wb") as f:
-        f.write(pdf_bytes)
+    try:
+        urllib.request.urlretrieve(pdf_url, output_dir.joinpath(hash_filename))
+    except Exception as e:
+        logging.error(f"Error downloading PDF at url {pdf_url}: {str(e)}")
+        return None
 
     return hash_filename
 
@@ -110,8 +112,39 @@ def get_doi_from_url(url: str) -> Union[str, None]:
     return match.group() if match else None
 
 
+def wrangle_data_forrt(df):
+    """
+    Standardize column names
+    """
+    df.columns = df.columns.str.lower()
+    df.rename(
+        columns={
+            df.columns[df.columns.str.contains(pat="provider")][0]: "creators",
+            df.columns[df.columns.str.contains(pat="url")][0]: "link_to_resource",
+            df.columns[df.columns.str.contains(pat="material type")][
+                0
+            ]: "material_type",
+            df.columns[df.columns.str.contains(pat="education level")][
+                0
+            ]: "education_level",
+            df.columns[df.columns.str.contains(pat="conditions of use")][
+                0
+            ]: "conditions_of_use",
+            df.columns[df.columns.str.contains(pat="primary user")][0]: "primary_user",
+            df.columns[df.columns.str.contains(pat="subject areas")][
+                0
+            ]: "subject_areas",
+            df.columns[df.columns.str.contains(pat="clusters")][0]: "FORRT_clusters",
+            df.columns[df.columns.str.contains(pat="user tags")][0]: "tags",
+        },
+        inplace=True,
+    )
+    df.fillna("", inplace=True)
+    return df
+
+
 # Data transformation utilities
-def wrangle_data(df: pd.DataFrame) -> pd.DataFrame:
+def wrangle_data_justos(df: pd.DataFrame) -> pd.DataFrame:
     """
     Standardize column names in the DataFrame.
 

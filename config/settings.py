@@ -16,7 +16,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "TEMPERATURE": 0.3,
     "TEMPERATURE_GENERAL": 0.15,
     # Vector store settings
-    "VECTOR_STORE": "data/processed/vs_250703_bge-small-en-v1.5",
+    "VECTOR_STORE": "data/processed/vs_latest_bge-small-en-v1.5",
     "RETRIEVER_TOP_K": 20,
     # RANKING SETTINGS
     "MIN_RELEVANCE": 0.1,
@@ -31,6 +31,11 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "RATE_LIMIT_DAY": 200,  # Number of requests allowed per day per user/IP
     # Chat settings
     "MESSAGE_TTL": 3600,  # 1 hour in seconds
+    # Google Drive settings
+    "CREDENTIALS_FILE": "credentials.json",
+    "GDRIVE_FOLDER_ID": "1EqOxpkb-ksYjRmvSHl1XjULlcPxZINdD",
+    "URL_JUST_OS_DB": "https://drive.google.com/uc?id=1eMiimpcwcnVJT6k4PQ9xfz3Udvsejo6V",
+    "GDRIVE_AUTHENTICATION_SERVER_PORT": 41813,
 }
 
 # Override defaults with environment variables
