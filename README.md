@@ -5,24 +5,13 @@ This repository contains the source code for the [JUST-OS](https://just-open-sci
 
 ## Installation
 
-1. Install uv according to the instructions for your platform [here](https://docs.astral.sh/uv/getting-started/installation/)
-
-2. Clone the repository:
-```bash
-git clone https://github.com/just-open-science/JUST-OS.git
-cd JUST-OS
+1. Make sure your system has both `docker` and `docker-compose` installed
+2. Depending on your setup, create a symlink `compose.override.yaml` to either `compose.dev.yaml` or `compose.prod.yaml`. In the development environment the web server will automatically restart after changes to the code.
 ```
-3. Download the vector store from [here](https://drive.google.com/drive/folders/10aQOEk4EdpGMg5FsZQ_1F6du6g8I4QRu?usp=drive_link) and copy/extract it to `data/processed`.
-
-4. Create an `.env` file with your UG-LLM api key like
+ln -s <compose.dev.yaml or compose.prod.yaml> compose.override.yaml
 ```
-RUGLLM_API_KEY=<your key>
-``` 
-
-5. Start the app with:
-```bash
-uv run app.py
-```
+3. Copy `.env.example` to `.env` and fill in the required variables.
+4. Start the docker containers with `docker compose up`.
 
 ## Ingestion Pipeline
 
@@ -42,3 +31,10 @@ The ingestion process creates a vector store in the `data` folder that the backe
    ```bash
    uv run embed.py
    ```
+
+## Acknowledgements
+The development of the application benefitted greatly from the following open source software and public resources:
+- Allen Institue for AI's [OpenScholar model](https://huggingface.co/OpenSciLM/Llama-3.1_OpenScholar-8B) and [associated software](https://github.com/AkariAsai/OpenScholar)
+- Sebastian Mathot's [Sigmund repository](https://github.com/open-cogsci/sigmund-ai)
+- The [Unpaywall API](https://unpaywall.org/products/api)
+- [This](https://github.com/nickjj/docker-flask-example) example Docker + Flask web app

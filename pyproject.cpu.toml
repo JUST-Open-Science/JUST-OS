@@ -1,7 +1,7 @@
 [project]
 name = "just-os"
 version = "0.1.0"
-description = "Add your description here"
+description = "A RAG Application for Navigating Open Science Resources"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
