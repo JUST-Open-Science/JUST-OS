@@ -16,7 +16,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "TEMPERATURE": 0.3,
     "TEMPERATURE_GENERAL": 0.15,
     # Vector store settings
-    "VECTOR_STORE": "data/processed/vs_250703_bge-small-en-v1.5",
+    "VECTOR_STORE": "data/processed/vs_latest_bge-small-en-v1.5",
     "RETRIEVER_TOP_K": 20,
     # RANKING SETTINGS
     "MIN_RELEVANCE": 0.1,
@@ -35,7 +35,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "CREDENTIALS_FILE": "credentials.json",
     "GDRIVE_FOLDER_ID": "1EqOxpkb-ksYjRmvSHl1XjULlcPxZINdD",
     "URL_JUST_OS_DB": "https://drive.google.com/uc?id=1eMiimpcwcnVJT6k4PQ9xfz3Udvsejo6V",
-    "GDRIVE_AUTENTICATION_SERVER_PORT": 41813,
+    "GDRIVE_AUTHENTICATION_SERVER_PORT": 41813,
 }
 
 # Override defaults with environment variables
