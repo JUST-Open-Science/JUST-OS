@@ -1,6 +1,6 @@
 # JUST-OS
 
-This repository contains the source code for the [JUST-OS](https://just-open-science.github.io/) project.
+This repository contains the source code for the [JUST-OS](https://www.just-os.org/) project.
 
 
 ## Installation
