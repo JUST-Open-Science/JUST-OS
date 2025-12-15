@@ -29,6 +29,11 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "RATE_LIMIT_MINUTE": 10,  # Number of requests allowed per minute per user/IP
     "RATE_LIMIT_HOUR": 50,  # Number of requests allowed per hour per user/IP
     "RATE_LIMIT_DAY": 200,  # Number of requests allowed per day per user/IP
+    # CORS settings
+    "ALLOWED_ORIGINS": ["https://forrt.org"],
+    # Input validation
+    "MAX_MESSAGE_LENGTH": 2000,
+    "MIN_MESSAGE_LENGTH": 3,
     # Chat settings
     "MESSAGE_TTL": 3600,  # 1 hour in seconds
     # Google Drive settings
