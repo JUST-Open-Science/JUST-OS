@@ -18,7 +18,10 @@ import logging
 load_dotenv()
 EMAIL = os.environ["UNPAYWALL_EMAIL"]
 UNPAYWALL_API_BASE = "https://api.unpaywall.org/v2"
-URL_FORRT = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRgYcUP3ybhe4x05Xp4-GTf-Cn2snBCW8WOP_N7X-9r80AeCpFAGTfWn6ITtBk-haBkDqXAYXh9a_x4/pub?gid=1924034107&single=true&output=csv"
+# Single URL kept inside a list for backward compatibility — can be a str or list
+URL_FORRT = [
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vRgYcUP3ybhe4x05Xp4-GTf-Cn2snBCW8WOP_N7X-9r80AeCpFAGTfWn6ITtBk-haBkDqXAYXh9a_x4/pub?gid=1924034107&single=true&output=csv"
+]
 
 # Regular expressions
 doi_pattern = re.compile(r"10\.\d{4,}/[\w/.-]+")

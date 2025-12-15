@@ -17,8 +17,16 @@ from ingest.helpers import (
 )
 
 if __name__ == "__main__":
-    df_forrt = pd.read_csv(URL_FORRT)
-    df_forrt = wrangle_data_forrt(df_forrt)
+    # Accept a single URL or a list of URLs for FORRT sources
+    urls = URL_FORRT if isinstance(URL_FORRT, (list, tuple)) else [URL_FORRT]
+
+    df_list = []
+    for url in urls:
+        df_tmp = pd.read_csv(url)
+        df_tmp = wrangle_data_forrt(df_tmp)
+        df_list.append(df_tmp)
+
+    df_forrt = pd.concat(df_list, ignore_index=True)
 
     df_just_os = pd.read_csv(URL_JUST_OS_DB)
 
