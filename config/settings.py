@@ -25,10 +25,8 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "REDIS_HOST": "redis",
     "REDIS_PORT": 6379,
     "REDIS_DB": 0,
-    # Rate limiting configuration
-    "RATE_LIMIT_MINUTE": 10,  # Number of requests allowed per minute per user/IP
-    "RATE_LIMIT_HOUR": 50,  # Number of requests allowed per hour per user/IP
-    "RATE_LIMIT_DAY": 200,  # Number of requests allowed per day per user/IP
+    # see https://flask-limiter.readthedocs.io/en/stable/configuration.html#ratelimit-string
+    "RATE_LIMIT": "100/minute;500/hour;2000/day",
     # CORS settings
     "ALLOWED_ORIGINS": ["https://forrt.org"],
     # Input validation

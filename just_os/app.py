@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import secrets
-from typing import Dict, Any, Optional, Generator, Union
+from typing import Dict, Any, Generator
 
 from flask import Flask, Response, render_template, request, session, jsonify
 from flask_cors import CORS
@@ -37,7 +37,6 @@ class RateLimitManager:
         self.limiter = Limiter(
             key_func=self._get_rate_limit_key,
             app=self.app,
-            default_limits=self._get_default_rate_limits(),
             storage_uri=f"redis://{config['REDIS_HOST']}:{config['REDIS_PORT']}/{config['REDIS_DB']}",
             strategy="fixed-window",
         )
@@ -81,13 +80,10 @@ class RateLimitManager:
             str: Rate limit string in the format "X per minute/hour"
         """
         # Check if rate limits are defined in config
-        if "RATE_LIMIT_MINUTE" in self.config:
-            return f"{self.config['RATE_LIMIT_MINUTE']} per minute"
-        if "RATE_LIMIT_HOUR" in self.config:
-            return f"{self.config['RATE_LIMIT_HOUR']} per hour"
-
-        # Default rate limit if not configured
-        return "10 per minute"
+        if "RATE_LIMIT" in self.config:
+            return self.config["RATE_LIMIT"]
+        
+        return None
 
     def _handle_rate_limit_exceeded(self, e: TooManyRequests):
         """
