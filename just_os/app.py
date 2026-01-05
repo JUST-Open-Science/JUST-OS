@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import secrets
-from typing import Dict, Any, Generator
+from typing import Dict, Any, Generator, Optional
 
 from flask import Flask, Response, render_template, request, session, jsonify
 from flask_cors import CORS
