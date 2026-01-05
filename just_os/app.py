@@ -2,9 +2,10 @@ import json
 import logging
 import os
 import secrets
-from typing import Dict, Any, Optional, Generator, Union
+from typing import Dict, Any, Generator, Optional
 
 from flask import Flask, Response, render_template, request, session, jsonify
+from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from werkzeug.exceptions import TooManyRequests
@@ -36,7 +37,6 @@ class RateLimitManager:
         self.limiter = Limiter(
             key_func=self._get_rate_limit_key,
             app=self.app,
-            default_limits=self._get_default_rate_limits(),
             storage_uri=f"redis://{config['REDIS_HOST']}:{config['REDIS_PORT']}/{config['REDIS_DB']}",
             strategy="fixed-window",
         )
@@ -45,20 +45,7 @@ class RateLimitManager:
         self.app.errorhandler(429)(self._handle_rate_limit_exceeded)
 
     def _get_rate_limit_key(self):
-        """
-        Custom key function for rate limiting that uses both IP and session ID.
-        This provides more accurate rate limiting for users behind shared IPs.
-
-        Returns:
-            str: Rate limit key combining IP address and session ID if available
-        """
-        # Get the IP address
-        ip_address = get_remote_address()
-
-        # Get the session ID if available, otherwise use IP only
-        if "user_id" in session:
-            return f"{ip_address}_{session['user_id']}"
-        return ip_address
+        return get_remote_address()
 
     def get_chat_rate_limit(self) -> str:
         """
@@ -68,13 +55,10 @@ class RateLimitManager:
             str: Rate limit string in the format "X per minute/hour"
         """
         # Check if rate limits are defined in config
-        if "RATE_LIMIT_MINUTE" in self.config:
-            return f"{self.config['RATE_LIMIT_MINUTE']} per minute"
-        if "RATE_LIMIT_HOUR" in self.config:
-            return f"{self.config['RATE_LIMIT_HOUR']} per hour"
-
-        # Default rate limit if not configured
-        return "10 per minute"
+        if "RATE_LIMIT" in self.config:
+            return self.config["RATE_LIMIT"]
+        
+        return None
 
     def _handle_rate_limit_exceeded(self, e: TooManyRequests):
         """
@@ -95,30 +79,6 @@ class RateLimitManager:
         )
         response.status_code = 429
         return response
-
-    def _get_default_rate_limits(self) -> list:
-        """
-        Get the default rate limits from config.
-
-        Returns:
-            list: List of rate limit strings
-        """
-        limits = []
-
-        # Add day limit if configured
-        if "RATE_LIMIT_DAY" in self.config:
-            limits.append(f"{self.config['RATE_LIMIT_DAY']} per day")
-        else:
-            limits.append("200 per day")
-
-        # Add hour limit if configured
-        if "RATE_LIMIT_HOUR" in self.config:
-            limits.append(f"{self.config['RATE_LIMIT_HOUR']} per hour")
-        else:
-            limits.append("50 per hour")
-
-        return limits
-
 
 class FlaskApp:
     """
@@ -142,10 +102,54 @@ class FlaskApp:
         # Initialize rate limiting
         self.rate_limit_manager = RateLimitManager(self.app, self.config)
 
+        # Configure CORS for cross-origin API access
+        self._configure_cors()
+
         # Set up routes
         self.setup_routes()
 
         logger.debug("Flask application initialized")
+
+    def _configure_cors(self):
+        """
+        Configure CORS (Cross-Origin Resource Sharing) to allow
+        specified origins to access the API.
+        """
+        allowed_origins = self.config.get("ALLOWED_ORIGINS", [])
+        
+        if allowed_origins:
+            CORS(
+                self.app,
+                resources={
+                    r"/chat": {
+                        "origins": allowed_origins,
+                        "methods": ["POST", "OPTIONS"],
+                        "allow_headers": ["Content-Type"],
+                    }
+                },
+            )
+            logger.info(f"CORS enabled for origins: {allowed_origins}")
+        else:
+            logger.debug("CORS not configured - no ALLOWED_ORIGINS specified")
+
+    def _validate_message(self, message: str) -> tuple[bool, Optional[str]]:
+        """
+        Validate the user's message.
+
+        Args:
+            message: The message to validate
+
+        Returns:
+            Tuple of (is_valid, error_message)
+        """
+        max_length = self.config.get("MAX_MESSAGE_LENGTH", 2000)
+        min_length = self.config.get("MIN_MESSAGE_LENGTH", 3)
+
+        if len(message) < min_length:
+            return False, f"Message too short (minimum {min_length} characters)"
+        if len(message) > max_length:
+            return False, f"Message too long (maximum {max_length} characters)"
+        return True, None
 
     def setup_routes(self):
         """Set up all application routes."""
@@ -192,6 +196,17 @@ class FlaskApp:
                     {
                         "status": "error",
                         "message": "Invalid request data. 'message' and 'chat_id' are required.",
+                    }
+                ), 400
+
+            # Validate message content
+            is_valid, error_msg = self._validate_message(user_message)
+            if not is_valid:
+                logger.warning(f"Message validation failed: {error_msg}")
+                return jsonify(
+                    {
+                        "status": "error",
+                        "message": error_msg,
                     }
                 ), 400
 
