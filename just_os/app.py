@@ -45,32 +45,7 @@ class RateLimitManager:
         self.app.errorhandler(429)(self._handle_rate_limit_exceeded)
 
     def _get_rate_limit_key(self):
-        """
-        Custom key function for rate limiting that uses both IP and session ID.
-        This provides more accurate rate limiting for users behind shared IPs.
-        
-        For cross-origin requests (where cookies won't work), also accepts
-        session_id from the request body.
-
-        Returns:
-            str: Rate limit key combining IP address and session ID if available
-        """
-        # Get the IP address
-        ip_address = get_remote_address()
-
-        session_id = None
-        
-        # Try to get session_id from request body (works for cross-origin requests)
-        if request.is_json and request.json:
-            session_id = request.json.get('session_id')
-        
-        # Fall back to Flask session cookie if available
-        if not session_id and "user_id" in session:
-            session_id = session["user_id"]
-        
-        if session_id:
-            return f"{ip_address}_{session_id}"
-        return ip_address
+        return get_remote_address()
 
     def get_chat_rate_limit(self) -> str:
         """
@@ -104,30 +79,6 @@ class RateLimitManager:
         )
         response.status_code = 429
         return response
-
-    def _get_default_rate_limits(self) -> list:
-        """
-        Get the default rate limits from config.
-
-        Returns:
-            list: List of rate limit strings
-        """
-        limits = []
-
-        # Add day limit if configured
-        if "RATE_LIMIT_DAY" in self.config:
-            limits.append(f"{self.config['RATE_LIMIT_DAY']} per day")
-        else:
-            limits.append("200 per day")
-
-        # Add hour limit if configured
-        if "RATE_LIMIT_HOUR" in self.config:
-            limits.append(f"{self.config['RATE_LIMIT_HOUR']} per hour")
-        else:
-            limits.append("50 per hour")
-
-        return limits
-
 
 class FlaskApp:
     """
