@@ -121,28 +121,27 @@ def wrangle_data_forrt(df):
     Standardize column names
     """
     df.columns = df.columns.str.lower()
-    df.rename(
-        columns={
-            df.columns[df.columns.str.contains(pat="provider")][0]: "creators",
-            df.columns[df.columns.str.contains(pat="url")][0]: "link_to_resource",
-            df.columns[df.columns.str.contains(pat="material type")][
-                0
-            ]: "material_type",
-            df.columns[df.columns.str.contains(pat="education level")][
-                0
-            ]: "education_level",
-            df.columns[df.columns.str.contains(pat="conditions of use")][
-                0
-            ]: "conditions_of_use",
-            df.columns[df.columns.str.contains(pat="primary user")][0]: "primary_user",
-            df.columns[df.columns.str.contains(pat="subject areas")][
-                0
-            ]: "subject_areas",
-            df.columns[df.columns.str.contains(pat="clusters")][0]: "FORRT_clusters",
-            df.columns[df.columns.str.contains(pat="user tags")][0]: "tags",
-        },
-        inplace=True,
-    )
+    
+    # Build rename dictionary dynamically to handle missing columns
+    rename_dict = {}
+    
+    # Helper function to find and add column if it exists
+    def add_rename(pattern, new_name):
+        matches = df.columns[df.columns.str.contains(pat=pattern)]
+        if len(matches) > 0:
+            rename_dict[matches[0]] = new_name
+    
+    add_rename("provider|authors", "creators")
+    add_rename("url", "link_to_resource")
+    add_rename("material type|material_type", "material_type")
+    add_rename("education level", "education_level")
+    add_rename("conditions of use", "conditions_of_use")
+    add_rename("primary user", "primary_user")
+    add_rename("subject areas", "subject_areas")
+    add_rename("clusters", "FORRT_clusters")
+    add_rename("user tags", "tags")
+    
+    df.rename(columns=rename_dict, inplace=True)
     df.fillna("", inplace=True)
     return df
 
