@@ -47,8 +47,7 @@ Send a message and receive a streaming response.
 ```json
 {
   "message": "What is open science?",
-  "chat_id": "unique-conversation-id",
-  "session_id": "unique-user-session-id"
+  "chat_id": "unique-conversation-id"
 }
 ```
 
@@ -56,7 +55,6 @@ Send a message and receive a streaming response.
 |-------|----------|-------------|
 | `message` | Yes | The user's question (3-2000 characters) |
 | `chat_id` | Yes | UUID for conversation continuity (generate with `crypto.randomUUID()`) |
-| `session_id` | No | UUID for rate limiting across sessions (recommended for better rate limit accuracy) |
 
 ### Response
 
@@ -67,22 +65,11 @@ The endpoint returns a Server-Sent Events stream with JSON objects:
 {"status": "complete", "message": "<formatted HTML response>"}
 ```
 
-### Rate Limits
-
-- 10 requests per minute
-- 50 requests per hour  
-- 200 requests per day
-
-Rate limits are applied per IP address + session_id combination.
 
 ### Example JavaScript Implementation
 
 ```javascript
-// Persist session_id across page loads for consistent rate limiting
-const sessionId = localStorage.getItem('just-os-session') || crypto.randomUUID();
-localStorage.setItem('just-os-session', sessionId);
 
-// Chat ID should be unique per conversation
 let chatId = crypto.randomUUID();
 
 async function sendMessage(userMessage) {
@@ -92,7 +79,6 @@ async function sendMessage(userMessage) {
     body: JSON.stringify({
       message: userMessage,
       chat_id: chatId,
-      session_id: sessionId
     })
   });
 
@@ -120,17 +106,9 @@ async function sendMessage(userMessage) {
 }
 ```
 
-### Adding New Origins
-
-To allow additional domains to access the API, add them to the `ALLOWED_ORIGINS` list in `config/settings.py`:
-
-```python
-"ALLOWED_ORIGINS": ["https://forrt.org", "https://example.com"],
-```
-
 ## Acknowledgements
 The development of the application benefitted greatly from the following open source software and public resources:
-- Allen Institue for AI's [OpenScholar model](https://huggingface.co/OpenSciLM/Llama-3.1_OpenScholar-8B) and [associated software](https://github.com/AkariAsai/OpenScholar)
+- Allen Institute for AI's [OpenScholar model](https://huggingface.co/OpenSciLM/Llama-3.1_OpenScholar-8B) and [associated software](https://github.com/AkariAsai/OpenScholar)
 - Sebastian Mathot's [Sigmund repository](https://github.com/open-cogsci/sigmund-ai) (The front-end portion of JUST-OS was developed with substantial reference to Sigmund and is hence shared under GPL3)
 - The [Unpaywall API](https://unpaywall.org/products/api)
 - [This](https://github.com/nickjj/docker-flask-example) example Docker + Flask web app
