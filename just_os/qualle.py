@@ -745,7 +745,7 @@ class Qualle:
                 # Retrieve and rerank relevant sources
                 yield {"status": "in-progress", "message": "Finding relevant sources"}
                 logger.debug("Retrieving and reranking nodes for query")
-                ranked_nodes, all_nodes = self.document_retriever.retrieve_and_rerank(
+                ranked_nodes, _ = self.document_retriever.retrieve_and_rerank(
                     query
                 )
 
@@ -788,7 +788,7 @@ class Qualle:
                 )
                 html_message, used_refs = (
                     self.response_generator.process_with_references(
-                        processed_message, all_nodes
+                        processed_message, ranked_nodes
                     )
                 )
 
@@ -806,7 +806,7 @@ class Qualle:
                     "message": html_message,
                     "metadata": {
                         "sources": self.reference_processor.references_from_nodes(
-                            all_nodes, used_refs
+                            ranked_nodes, used_refs
                         )
                     },
                 }
