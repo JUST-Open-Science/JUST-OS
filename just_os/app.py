@@ -154,6 +154,11 @@ class FlaskApp:
     def setup_routes(self):
         """Set up all application routes."""
 
+        @self.app.route("/up")
+        def health():
+            """Return a lightweight liveness response."""
+            return jsonify({"status": "ok"})
+
         @self.app.route("/")
         def home():
             """Home page route."""
