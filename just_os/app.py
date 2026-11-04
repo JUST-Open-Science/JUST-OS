@@ -275,8 +275,8 @@ class FlaskApp:
 
                 self._rag_service = create_rag_service(self.config, self.chat_manager)
                 logger.debug("RAG service initialized")
-            except Exception as e:
-                logger.error(f"Failed to initialize RAG service: {str(e)}")
+            except Exception:
+                logger.exception("Failed to initialize RAG service")
                 return None
 
         return self._rag_service
