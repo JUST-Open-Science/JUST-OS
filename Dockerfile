@@ -33,7 +33,7 @@ CMD ["bash"]
 
 ###############################################################################
 
-FROM python:3.12.11-slim-bookworm AS app-build
+FROM python:3.12.16-slim-bookworm AS app-build
 
 WORKDIR /app
 
@@ -42,17 +42,19 @@ ARG GID=1000
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends build-essential curl libpq-dev \
+  && python -m pip install --no-cache-dir --upgrade "pip==26.2.2" \
   && rm -rf /var/lib/apt/lists/* /usr/share/doc /usr/share/man \
   && apt-get clean \
   && groupadd -g "${GID}" python \
   && useradd --create-home --no-log-init -u "${UID}" -g "${GID}" python \
   && chown python:python -R /app
 
-COPY --from=ghcr.io/astral-sh/uv:0.6.9 /uv /uvx /usr/local/bin/
+COPY --from=ghcr.io/astral-sh/uv:0.13.7 /uv /uvx /usr/local/bin/
 
 USER python
 
 COPY --chown=python:python pyproject.cpu.toml  ./pyproject.toml
+COPY --chown=python:python uv.lock ./uv.lock
 COPY --chown=python:python bin/ ./bin
 
 ENV PYTHONUNBUFFERED="true" \
@@ -68,7 +70,7 @@ CMD ["bash"]
 
 ###############################################################################
 
-FROM python:3.12.11-slim-bookworm AS app
+FROM python:3.12.16-slim-bookworm AS app
 
 WORKDIR /app
 
@@ -77,6 +79,7 @@ ARG GID=1000
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends curl libpq-dev \
+  && python -m pip install --no-cache-dir --upgrade "pip==26.2.2" \
   && rm -rf /var/lib/apt/lists/* /usr/share/doc /usr/share/man \
   && apt-get clean \
   && groupadd -g "${GID}" python \
