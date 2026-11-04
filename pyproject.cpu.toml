@@ -5,6 +5,7 @@ description = "A RAG Application for Navigating Open Science Resources"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "beautifulsoup4>=4.14.3",
     "faiss-cpu>=1.11.0",
     "flask-cors>=5.0.0",
     "flask-static-digest>=0.4.1",
@@ -15,6 +16,7 @@ dependencies = [
     "llama-index-vector-stores-faiss>=0.4.0",
     "llama-index>=0.12.42",
     "markdown>=3.8",
+    "python-dotenv>=1.1.0",
     "pyyaml>=6.0.2",
     "redis>=6.2.0",
     "multidict>=6.6.3",
@@ -33,7 +35,6 @@ ingest = [
     "marker-pdf>=1.8.0",
     "pandas>=2.2.3",
     "psutil>=7.0.0",
-    "python-dotenv>=1.1.0",
     "tqdm>=4.67.1",
 ]
 
