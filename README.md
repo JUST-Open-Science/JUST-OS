@@ -13,6 +13,9 @@ ln -s <compose.dev.yaml or compose.prod.yaml> compose.override.yaml
 3. Copy `.env.example` to `.env` and fill in the required variables.
 4. Start the docker containers with `docker compose up`.
 
+For a production deployment behind a reverse proxy, see
+[DEPLOYMENT.md](DEPLOYMENT.md).
+
 ## Ingestion Pipeline
 
 The ingestion process creates a vector store in the `data` folder that the backend will use. Follow these steps in order:

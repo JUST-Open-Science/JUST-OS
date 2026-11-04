@@ -1,9 +1,6 @@
 services:
-  web:
-    container_name: just-os-container
-    networks:
-      - proxy-network
+  redis:
+    restart: unless-stopped
 
-networks:
-  proxy-network:
-    external: true
+  web:
+    restart: unless-stopped
