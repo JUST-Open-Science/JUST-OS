@@ -13,7 +13,7 @@ x-app: &default-app
   environment:
     OMP_NUM_THREADS: 1
   env_file:
-    - ".env"
+    - "${JUST_OS_ENV_FILE:-.env}"
   restart: "${DOCKER_RESTART_POLICY:-unless-stopped}"
   stop_grace_period: "3s"
   tty: true
@@ -30,7 +30,7 @@ x-assets: &default-assets
       - "FLASK_DEBUG=${FLASK_DEBUG:-false}"
       - "NODE_ENV=${NODE_ENV:-production}"
   env_file:
-    - ".env"
+    - "${JUST_OS_ENV_FILE:-.env}"
   profiles: ["assets"]
   restart: "${DOCKER_RESTART_POLICY:-unless-stopped}"
   stop_grace_period: "0"

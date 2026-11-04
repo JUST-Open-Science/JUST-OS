@@ -9,6 +9,7 @@ public/*
 .env*
 !.env.example
 docker-compose.override.yml
+compose.override.yaml
 
 
 ### Python ####################################################################
