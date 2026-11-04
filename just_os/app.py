@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import re
 import secrets
 from typing import Dict, Any, Generator, Optional
 
@@ -9,6 +10,7 @@ from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from werkzeug.exceptions import TooManyRequests
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from config.settings import get_config
 from just_os.chat_manager import ChatManager
@@ -92,8 +94,19 @@ class FlaskApp:
 
         # Initialize Flask app
         self.app = Flask(__name__, static_folder="../public", static_url_path="")
-        self.app.secret_key = os.getenv("SECRET_KEY", secrets.token_hex(16))
+        secret_key = os.getenv("SECRET_KEY")
+        if os.getenv("JUST_OS_REQUIRE_SECRET", "false").lower() == "true" and not secret_key:
+            raise RuntimeError("SECRET_KEY must be set in production")
+        self.app.secret_key = secret_key or secrets.token_hex(32)
         self.app.config.update(self.config)
+        self.app.config.update(
+            SESSION_COOKIE_HTTPONLY=True,
+            SESSION_COOKIE_SAMESITE="Lax",
+            SESSION_COOKIE_SECURE=os.getenv("JUST_OS_SECURE_COOKIES", "false").lower() == "true",
+            MAX_CONTENT_LENGTH=16384,
+        )
+        if os.getenv("JUST_OS_TRUST_PROXY", "false").lower() == "true":
+            self.app.wsgi_app = ProxyFix(self.app.wsgi_app, x_for=1, x_proto=1)
 
         # Initialize components
         self.chat_manager = ChatManager()
@@ -165,15 +178,8 @@ class FlaskApp:
             # Get background color from URL parameter, default to #fefdf6 if not provided
             bg_color = request.args.get("bg_color", "#fefdf6")
 
-            # Validate the background color (simple validation for hex colors and named colors)
-            import re
-
-            if bg_color.startswith("#"):
-                # Validate hex color format (#RGB, #RRGGBB, #RRGGBBAA)
-                if not re.match(
-                    r"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$", bg_color
-                ):
-                    bg_color = "#fefdf6"  # Default if invalid
+            if not re.fullmatch(r"#(?:[0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})", bg_color):
+                bg_color = "#fefdf6"
 
             return render_template("index.html", bg_color=bg_color)
 
@@ -203,6 +209,11 @@ class FlaskApp:
                         "message": "Invalid request data. 'message' and 'chat_id' are required.",
                     }
                 ), 400
+
+            if not isinstance(user_message, str) or not isinstance(chat_id, str) or not re.fullmatch(
+                r"[A-Za-z0-9_-]{1,64}", chat_id
+            ):
+                return jsonify({"status": "error", "message": "Invalid message or chat ID."}), 400
 
             # Validate message content
             is_valid, error_msg = self._validate_message(user_message)

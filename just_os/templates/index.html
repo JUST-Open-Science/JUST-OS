@@ -5,21 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JUST-OS</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/app.css') }}" rel="stylesheet">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap"
-        rel="stylesheet">
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     
     <style>
         body {
-            background-color: {{ bg_color|safe }};
+            background-color: {{ bg_color }};
         }
     </style>
 </head>
@@ -27,15 +19,15 @@
     <img src='/images/qualle.png' id="header-logo">
 </div>
 <div id="container">
-    <div id="chat-messages">{{ message_history | safe }}</div>
+    <div id="chat-messages"></div>
     <div id="status-message"></div>
     <div id="user-input-box">
         <div id="user-input-container">
             <textarea id="user-input" placeholder="Ask anything related to Open Science."></textarea>
             <div id=button-container>
-                <button id="send-button" title="Send message"><i class="fas fa-paper-plane"></i></button>
-                <button id="info-button" title="About JUST-OS"><i class="fas fa-circle-info"></i></button>
-                <button id="new-chat-button" title="Start a new conversation"><i class="fas fa-rotate-right"></i></button>
+                <button id="send-button" title="Send message" aria-label="Send message">➤</button>
+                <button id="info-button" title="About JUST-OS" aria-label="About JUST-OS">ⓘ</button>
+                <button id="new-chat-button" title="Start a new conversation" aria-label="Start a new conversation">⟳</button>
             </div>
         </div>
     </div>

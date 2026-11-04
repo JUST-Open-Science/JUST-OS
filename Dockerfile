@@ -17,7 +17,7 @@ USER node
 
 COPY --chown=node:node assets/package.json assets/*yarn* ./
 
-RUN yarn install && yarn cache clean
+RUN yarn install --frozen-lockfile && yarn cache clean
 
 ARG NODE_ENV="production"
 ENV NODE_ENV="${NODE_ENV}" \

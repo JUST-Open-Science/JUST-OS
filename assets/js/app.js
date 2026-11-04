@@ -1,5 +1,9 @@
+import DOMPurify from "dompurify";
+
 function setupReferenceHandlers() {
   document.querySelectorAll(".reference-link").forEach((link) => {
+    if (link.dataset.handlerAttached) return;
+    link.dataset.handlerAttached = "true";
     link.addEventListener("click", function (e) {
       e.preventDefault();
       e.stopPropagation();
@@ -15,16 +19,28 @@ function setupReferenceHandlers() {
 
       const data = JSON.parse(this.getAttribute("data-reference"));
 
-      tooltip.innerHTML = `
-                <div class="title">${data.title}</div>
-                <div class="metadata">${data.authors} (${data.year})</div>
-                <div class="content">${data.text}</div>
-                ${
-                  data.url
-                    ? `<a href="${data.url}" target="_blank" class="source-link">View source →</a>`
-                    : ""
-                }
-            `;
+      for (const [className, value] of [
+        ["title", data.title],
+        ["metadata", `${data.authors ?? ""} (${data.year ?? ""})`],
+        ["content", data.text],
+      ]) {
+        const element = document.createElement("div");
+        element.className = className;
+        element.textContent = value ?? "";
+        tooltip.appendChild(element);
+      }
+      try {
+        const url = new URL(data.url);
+        if (url.protocol === "https:" || url.protocol === "http:") {
+          const source = document.createElement("a");
+          source.href = url.href;
+          source.target = "_blank";
+          source.rel = "noopener noreferrer";
+          source.className = "source-link";
+          source.textContent = "View source →";
+          tooltip.appendChild(source);
+        }
+      } catch (_) { /* No valid source URL. */ }
 
       // Position tooltip near the click
       const rect = this.getBoundingClientRect();
@@ -73,7 +89,11 @@ function addMessage(message, sender, sources = null) {
   messageDiv.classList.add("message", `${sender}-message`);
 
   if (sender === "bot") {
-    messageDiv.innerHTML = message;
+    messageDiv.innerHTML = DOMPurify.sanitize(message, {
+      ALLOWED_TAGS: ["p", "br", "strong", "em", "ul", "ol", "li", "blockquote", "code", "pre", "a"],
+      ALLOWED_ATTR: ["href", "class", "data-reference"],
+      ALLOW_DATA_ATTR: false,
+    });
     // Setup reference handlers after adding bot message
     setTimeout(() => {
       setupReferenceHandlers();
@@ -112,7 +132,6 @@ function addMessage(message, sender, sources = null) {
 async function sendMessage(message) {
   const chatMessages = document.getElementById("chat-messages");
 
-  console.log("user message: " + message);
   if (message) {
     const userMessageBox = document.createElement("div");
     const messageP = document.createElement("p");
