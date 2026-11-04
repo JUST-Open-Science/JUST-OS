@@ -61,6 +61,17 @@ services:
 An explicit private override is preferable when deployment configuration is
 managed as code.
 
+The application expects the persisted vector index below the mounted data
+directory. With the default configuration, the important path is:
+
+```text
+/app/data/processed/vs_latest_bge-small-en-v1.5
+```
+
+Production data is transferred and managed separately from the Git checkout.
+It is not baked into the image. The `:ro` mount prevents the web application
+from modifying it.
+
 ## Start and update
 
 Copy `.env.example` to the protected production environment file, replace all
