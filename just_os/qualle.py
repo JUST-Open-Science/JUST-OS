@@ -567,7 +567,7 @@ class ReferenceProcessor:
                                     TIMESTAMP_KEY, "Unknown Year"
                                 ),
                                 "url": ref_node.metadata.get(URL_DOI_KEY, "#"),
-                                "text": html.escape(ref_node.text),
+                                "text": ref_node.text,
                             }
 
                             # Create JSON string and escape special characters for HTML safety
@@ -693,7 +693,7 @@ class Qualle:
         Yields:
             Response message
         """
-        logger.warning(f"No relevant nodes found for query: {query}")
+        logger.warning("No relevant nodes found for query")
         self.chat_manager.add_message(chat_id, {"role": "user", "content": query})
         self.chat_manager.add_message(
             chat_id,

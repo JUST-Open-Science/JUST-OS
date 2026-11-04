@@ -4,6 +4,7 @@
   "dependencies": {
     "@tailwindcss/cli": "4.1.8",
     "@tailwindcss/postcss": "4.1.8",
+    "dompurify": "3.4.17",
     "esbuild": "0.25.5",
     "esbuild-copy-static-files": "0.1.0",
     "tailwindcss": "4.1.8"

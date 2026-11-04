@@ -38,6 +38,9 @@ ingest = [
     "tqdm>=4.67.1",
 ]
 
+[tool.uv]
+required-version = ">=0.13.6,<0.14"
+
 [tool.uv.sources]
 torch = [
     { index = "pytorch-cpu"},

@@ -4,3 +4,11 @@ services:
 
   web:
     restart: unless-stopped
+    environment:
+      JUST_OS_REQUIRE_SECRET: "true"
+      JUST_OS_SECURE_COOKIES: "true"
+      JUST_OS_TRUST_PROXY: "true"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL

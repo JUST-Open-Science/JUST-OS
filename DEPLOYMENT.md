@@ -68,6 +68,10 @@ directory. With the default configuration, the important path is:
 /app/data/processed/vs_latest_bge-small-en-v1.5
 ```
 
+The CPU lock still includes Pillow 10.x because the optional PDF-ingestion
+dependencies require it. Do not process untrusted images or PDFs with this
+environment until the ingestion stack supports a patched Pillow release.
+
 Production data is transferred and managed separately from the Git checkout.
 It is not baked into the image. The `:ro` mount prevents the web application
 from modifying it.
@@ -75,12 +79,17 @@ from modifying it.
 ## Start and update
 
 Copy `.env.example` to the protected production environment file, replace all
-placeholder values, and set the following value inside that file so Compose
+placeholder values, including a persistent random `SECRET_KEY`, and set the following value inside that file so Compose
 also supplies it to the container:
 
 ```dotenv
 JUST_OS_ENV_FILE=/etc/just-os/app.env
 ```
+
+The production override enables secure cookies and trusts one reverse-proxy
+hop. Restrict direct access to the application port to that proxy; otherwise
+clients can spoof forwarded addresses and evade rate limits. For deployments
+without a trusted proxy, override `JUST_OS_TRUST_PROXY` to `false`.
 
 Start a pinned, reviewed revision with:
 
